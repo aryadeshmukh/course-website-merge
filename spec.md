@@ -1,29 +1,12 @@
-- Motivation
-    - Most classes at UC Berkeley have a course website
-        - Contains test dates, assignment due dates, links to assignments/projects, syllabus, teacher information, practice exams
-    - Goal is to create a new singular website/calendar containing information from 2-4 of these course websites
-        - Most students take 2-4 such classes
-        - All information student needs for all classes is in one place
-- Vision
-    - Calendar
-        - Each day has its own box
-        - Active assignments
-            - Assignments that have been assigned and are due at a current or future date
-            - List assignments in order of approaching due date
-            - Links to the assignment pages should work by clicking on assignment
-        - Lectures/discussions
-            - Time and location
-        - Tests
-            - Time and location
-            - Hyperlinks to practice exams for the test and test information from syllabus
-        - Before each assignment/lecture/discussion, name of the class is specified for clarification
-    - Grade Approximation
-        - User enters scores for tests/assignments and class average/standard deviation
-        - Weight of each assignment should be extracted from syllabus
-        - Based on previous years grade distribution or specified grade bins from the class the predicted grade of the student is calculated and displayed to the student
-        - Students can enter dummy scores to try to experiment what their grades would be given a certain score and test statistics
-    - Links Section
-        - Contains links that each individual website provides such as other resources, staff information, syllabus
-- User
-    - User provides links to the course pages
-    - User sees page with above features
+- User needs to be able to see active assignments
+    - Active assignments are those that have been assigned already but their due date has not yet passed
+    - Links to assignment specifications from course website need to be accessible
+- User needs to be able to see test information
+    - Link to practice exams from course website need to be accessible
+    - Link to test information from course syllabus needs to be accessible
+- User should be able to see grade approximation for every course
+    - User needs to be able to enter scores for every assignment
+    - For tests and projects user needs to also enter class average/standard deviation
+    - Assignment weights should be scraped from course syllabus
+    - Use previous year's distribution along with user inputs to show users their approximate grades in the class
+- User should be able to access links to the individual course websites themselves
