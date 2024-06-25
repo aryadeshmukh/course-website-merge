@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+import cgi
+import cgitb
+import sys
+
+def log(*msg) -> None:
+    print(*msg, file=sys.stderr)
+
+cgitb.enable()  # Enable CGI traceback for debugging
+
+# Create instance of FieldStorage
+form = cgi.FieldStorage()
+
+# Get data from fields
+new_link = form.getvalue('new-link')
+
+if new_link:
+    log('new link')
+    with open('../course-links.txt', 'a') as file:
+        file.write(f'\n{new_link.strip()}')
+
+links = []
+
+link_to_delete = -1
+
+if form.getvalue('delete'):
+    try:
+        link_to_delete = int(form.getvalue('link-to-delete'))
+        log(link_to_delete)
+    except Exception:   
+        pass
+
+with open('../course-links.txt', 'r') as file:
+    for i, link in enumerate(file):
+        link = link.strip()
+        if link and i != link_to_delete:
+            log(i, link)
+            links.append(link)
+
+with open('../course-links.txt', 'w') as file:
+    for link in links:
+        file.write(f'\n{link.strip()}')
+
+# Print HTML response
+print("Content-Type: text/html\r\n\r\n")
+print("<html>")
+print("<body>")
+print("<h1>Course Links</h1>")
+
+# Display form
+print('''
+    <form action="input-links" method="post">
+        <label for="new-link">Enter Course Link:</label>
+        <input type="text" id="new-link" name="new-link"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+''')
+
+for i, link in enumerate(links, start=1):
+    print(f'''
+        <p>
+            Link {i}: <a href=\'{link}\'>{link}</a>
+            <form action='input-links' method='post'>
+                <input type='hidden' name='link-to-delete' value='{i}'>
+                <input type='submit' value='Delete' name='delete'>
+            </form>
+        </p>
+    ''')
+
+print("</body>")
+print("</html>")
