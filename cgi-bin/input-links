@@ -2,42 +2,67 @@
 
 import cgi
 import cgitb
-import sys
-
-def log(*msg) -> None:
-    print(*msg, file=sys.stderr)
+from typing import List
 
 cgitb.enable()  # Enable CGI traceback for debugging
 
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
 
+def handle_new_link(new_link: str) -> None:
+    '''
+    Adds a new link to be displayed.
+
+    Keyword arguments:
+    new_link -- link to be added to the display
+    '''
+    with open('../course-links.txt', 'a') as file:
+        file.write(f'\n{new_link.strip()}')
+
+def delete_link(links: List[str], link_to_delete: int) -> None:
+    '''
+    Removes link from list of links and link storage.
+
+    Does not execute if link_to_delete is not positive or out of range of links.
+
+    Keyword arguments:
+    link_to_delete -- index of link to be deleted (1-indexed)
+    '''
+    if (link_to_delete <= 0 or link_to_delete > len(links)):
+        raise IndexError()
+
+    links.pop(link_to_delete - 1)
+
+    # Store links to be kept back into file
+    with open('../course-links.txt', 'w') as file:
+        for link in links:
+            file.write(f'\n{link}')
+
+def list_links() -> List[str]:
+    '''Returns a list of all links.'''
+    links = []
+    with open('../course-links.txt', 'r') as file:
+        file.readline()
+        for link in file:
+            link = link.strip()
+            links.append(link)
+    return links
+
 # Get data from fields
 new_link = form.getvalue('new-link')
 
 if new_link:
-    with open('../course-links.txt', 'a') as file:
-        file.write(f'\n{new_link.strip()}')
+    handle_new_link(new_link)
 
-links = []
-
-link_to_delete = -1
+links = list_links()
 
 if form.getvalue('delete'):
     try:
         link_to_delete = int(form.getvalue('link-to-delete'))
-    except Exception:   
+        delete_link(links, link_to_delete)
+    except Exception:
+        # Act as no deletion
         pass
-
-with open('../course-links.txt', 'r') as file:
-    for i, link in enumerate(file):
-        link = link.strip()
-        if link and i != link_to_delete:
-            links.append(link)
-
-with open('../course-links.txt', 'w') as file:
-    for link in links:
-        file.write(f'\n{link.strip()}')
 
 # Print HTML response
 print("Content-Type: text/html\r\n\r\n")
@@ -54,6 +79,7 @@ print('''
     </form>
 ''')
 
+# Display links
 for i, link in enumerate(links, start=1):
     print(f'''
         <p>
