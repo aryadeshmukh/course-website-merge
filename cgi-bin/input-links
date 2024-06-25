@@ -16,7 +16,6 @@ form = cgi.FieldStorage()
 new_link = form.getvalue('new-link')
 
 if new_link:
-    log('new link')
     with open('../course-links.txt', 'a') as file:
         file.write(f'\n{new_link.strip()}')
 
@@ -27,7 +26,6 @@ link_to_delete = -1
 if form.getvalue('delete'):
     try:
         link_to_delete = int(form.getvalue('link-to-delete'))
-        log(link_to_delete)
     except Exception:   
         pass
 
@@ -35,7 +33,6 @@ with open('../course-links.txt', 'r') as file:
     for i, link in enumerate(file):
         link = link.strip()
         if link and i != link_to_delete:
-            log(i, link)
             links.append(link)
 
 with open('../course-links.txt', 'w') as file:
