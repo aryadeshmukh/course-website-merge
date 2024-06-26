@@ -63,12 +63,12 @@ class Database:
             # Create new file in database directory to store record data
             new_file_name = f'record_{self.next_record_index}'
             self.next_record_index += 1
-            os.path.join('./', new_file_name)
+            os.path.join('./records/', new_file_name)
 
             self.primary_keys.append(new_file_name)
 
             # Store record data into new file
-            with open(f'./{new_file_name}', 'w') as file:
+            with open(f'./records/{new_file_name}', 'w') as file:
                 file.write(json.dumps(new_record))
 
             self.save_state()
@@ -89,7 +89,7 @@ class Database:
                 raise IndexError()
 
             record = None
-            with open(f'./{self.primary_keys[index]}', 'r') as file:
+            with open(f'./records/{self.primary_keys[index]}', 'r') as file:
                 record = json.loads(file.read())
             return record
         except Exception:
@@ -108,7 +108,7 @@ class Database:
             if index < 0 or index >= len(self.primary_keys):
                 raise IndexError()
             
-            os.remove(f'./{self.primary_keys[index]}')
+            os.remove(f'./records/{self.primary_keys[index]}')
             self.primary_keys.pop(index)
 
             self.save_state()

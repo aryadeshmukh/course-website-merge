@@ -3,8 +3,7 @@
 import sys
 import os
 import cgi
-from typing import List
-import html
+from html import escape
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database.database import Database
@@ -94,7 +93,7 @@ print('''
 
 # Display links
 for i, link in enumerate(db.list_records()):
-    escaped_link = html.escape(link)
+    escaped_link = escape(link)
     print(f'''
         <p>
             Link {i + 1}: <a href=\'{escaped_link}\'>{escaped_link}</a>

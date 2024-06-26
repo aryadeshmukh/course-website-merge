@@ -1,1 +1,1 @@
-{"primary-keys": ["record_4", "record_6"], "next-record-index": 7}
+{"primary-keys": ["record_7", "record_8", "record_9"], "next-record-index": 10}
