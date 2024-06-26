@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+import sys
+import os
 import cgi
-import cgitb
 from typing import List
+import html
 
-cgitb.enable()  # Enable CGI traceback for debugging
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from database.database import Database
+
+db = Database.load_state()
 
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
@@ -16,37 +21,44 @@ def handle_new_link(new_link: str) -> None:
     Keyword arguments:
     new_link -- link to be added to the display
     '''
-    with open('../course-links.txt', 'a') as file:
-        file.write(f'\n{new_link.strip()}')
+    db.add_record(new_link)
 
-def delete_link(links: List[str], link_to_delete: int) -> None:
+    # Pre-database implementation
+    # with open('../course-links.txt', 'a') as file:
+    #     file.write(f'{new_link.strip()}\n')
+
+def delete_link(link_to_delete: int) -> None:
     '''
     Removes link from list of links and link storage.
 
     Does not execute if link_to_delete is not positive or out of range of links.
 
     Keyword arguments:
-    link_to_delete -- index of link to be deleted (1-indexed)
+    link_to_delete -- index of link to be deleted (0-indexed)
     '''
-    if (link_to_delete <= 0 or link_to_delete > len(links)):
-        raise IndexError()
+    db.delete_record(link_to_delete)
 
-    links.pop(link_to_delete - 1)
+    # Pre database implementation
+    # if (link_to_delete <= 0 or link_to_delete > len(links)):
+    #     raise IndexError()
 
-    # Store links to be kept back into file
-    with open('../course-links.txt', 'w') as file:
-        for link in links:
-            file.write(f'\n{link}')
+    # links.pop(link_to_delete - 1)
 
-def list_links() -> List[str]:
-    '''Returns a list of all links.'''
-    links = []
-    with open('../course-links.txt', 'r') as file:
-        file.readline()
-        for link in file:
-            link = link.strip()
-            links.append(link)
-    return links
+    # # Store links to be kept back into file
+    # with open('../course-links.txt', 'w') as file:
+    #     for link in links:
+    #         file.write(f'{link}\n')
+
+# Pre database implementation
+# def list_links() -> List[str]:
+#     '''Returns a list of all links.'''
+#     links = []
+#     with open('../course-links.txt', 'r') as file:
+#         for link in file:
+#             link = link.strip()
+#             if link:
+#                 links.append(link)
+#     return links
 
 # Get data from fields
 new_link = form.getvalue('new-link')
@@ -54,12 +66,13 @@ new_link = form.getvalue('new-link')
 if new_link:
     handle_new_link(new_link)
 
-links = list_links()
+# Pre database implementation
+# links = list_links()
 
 if form.getvalue('delete'):
     try:
         link_to_delete = int(form.getvalue('link-to-delete'))
-        delete_link(links, link_to_delete)
+        delete_link(link_to_delete)
     except Exception:
         # Act as no deletion
         pass
@@ -80,10 +93,11 @@ print('''
 ''')
 
 # Display links
-for i, link in enumerate(links, start=1):
+for i, link in enumerate(db.list_records()):
+    escaped_link = html.escape(link)
     print(f'''
         <p>
-            Link {i}: <a href=\'{link}\'>{link}</a>
+            Link {i + 1}: <a href=\'{escaped_link}\'>{escaped_link}</a>
             <form action='input-links' method='post'>
                 <input type='hidden' name='link-to-delete' value='{i}'>
                 <input type='submit' value='Delete' name='delete'>
