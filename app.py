@@ -2,16 +2,23 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
+USERS_DB = 'users.db'
+
 app = Flask(__name__)
 
-def get_db_connection():
-    '''Function to get a database connection'''
-    con = sqlite3.connect('users.db')
+def get_db_connection(db_file: str):
+    '''
+    Function to get a database connection
+    
+    Keyword arguments:
+    db_file -- .db file representing the database
+    '''
+    con = sqlite3.connect(db_file)
     con.row_factory = sqlite3.Row
     return con
 
-with get_db_connection() as con:
-    '''Create the users table if it doesn't exist.'''
+# Create the users table if it doesn't exist.
+with get_db_connection(USERS_DB) as con:
     con.execute('''CREATE TABLE IF NOT EXISTS users
                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
                      username TEXT UNIQUE,
@@ -35,7 +42,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         hashed_password = generate_password_hash(password)
-        with get_db_connection() as con:
+        with get_db_connection(USERS_DB) as con:
             if con.execute('SELECT username FROM users WHERE username = ?', (username,)).fetchone():
                 error = 'Username already in use. Please try again.'
             else:
@@ -57,7 +64,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        with get_db_connection() as con:
+        with get_db_connection(USERS_DB) as con:
             user = con.execute('SELECT hashed_password FROM users WHERE username = ?', (username,)).fetchone()
             if user is None:
                 error = 'No account associated with username. Please try again.'
