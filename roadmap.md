@@ -19,4 +19,4 @@
 - User can indicate when finished adding courses to proceed.
     - User must have at least one course selected to proceed.
 - User can log out and go back to register page.
-- This page shown after successful registration
+- This page shown after successful registration.
