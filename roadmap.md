@@ -17,4 +17,6 @@
     - User can type for course in text box and course should show up if it exists.
 - User can continue to add courses or delete courses from selected.
 - User can indicate when finished adding courses to proceed.
+    - User must have at least one course selected to proceed.
 - User can log out and go back to register page.
+- This page shown after successful registration
