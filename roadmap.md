@@ -11,3 +11,10 @@
     - User enters login credentials.
     - If credentials are valid, user can proceed.
     - User can go to register page if user has not previously created an account.
+### Step 2: Course Selection Page
+- User is given options of courses to choose.
+    - Drop down search list.
+    - User can type for course in text box and course should show up if it exists.
+- User can continue to add courses or delete courses from selected.
+- User can indicate when finished adding courses to proceed.
+- User can log out and go back to register page.
