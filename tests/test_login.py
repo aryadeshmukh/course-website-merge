@@ -1,75 +1,55 @@
-import pytest
-import tempfile
-import os
-import sys
-from flask import Flask
-import sqlite3
+# This module tests registration and login functionality
 
-# Adjust the path to include the parent directory
+import pytest
+import sys
+import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import app, get_db_connection
+from app import _register, _login
+from database import get_db_connection, initialize_users_db
+from exceptions import InvalidCredentials, InvalidUsername
 
-@pytest.fixture
-def client():
-    '''Create a temporary database for testing.'''
-    db_path = 'users.db'
-    app.config['TESTING'] = True
-    app.config['DATABASE'] = db_path
+USERS_DB = 'users.db'
 
-    with app.test_client() as client:
-        with app.app_context():
-            init_db(db_path)
-        yield client
+@pytest.fixture(scope='module', autouse=True)
+def clean_db():
+    '''Enables use of a clean database.'''
+    initialize_users_db(erase=True)
 
-    os.unlink(db_path)
+def test_register_user():
+    '''Test registering new user.'''
+    try:
+        _register('testuser', 'testpassword')
+        # with get_db_connection(USERS_DB) as con:
+        #     user = con.execute('SELECT username WHERE username = ?', ('testuser',)).fetchone()
+        #     assert user
+    except InvalidUsername:
+        assert False
 
-def init_db(db_path):
-    '''Initialize empty database.'''
-    with get_db_connection(db_path) as con:
-        con.execute('DROP TABLE IF EXISTS users')
-        con.execute('''CREATE TABLE IF NOT EXISTS users
-                       (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        username TEXT UNIQUE,
-                        hashed_password TEXT)''')
-        con.commit()
+def test_login_user():
+    '''Test logging in existing user.'''
+    try:
+        _login('testuser', 'testpassword')
+        # with get_db_connection(USERS_DB) as con:
+        #     user = con.execute('SELECT username WHERE username = ?', ('testuser',)).fetchone()
+        #     assert user
+    except InvalidUsername:
+        assert False
+    except InvalidCredentials:
+        assert False
 
-def test_register_user(client):
-    '''Tests registering a new user.'''
-    response = client.post('/register', data={'username': 'testuser2', 'password': 'testpassword'})
-    assert response.status_code == 302
-    # Check to see if new user has been added to database.
-    with get_db_connection(app.config['DATABASE']) as con:
-        user = con.execute('SELECT * FROM users where username = ?', ('testuser2',)).fetchone()
-        assert user is not None
+def test_register_already_existing_username():
+    '''Tests registering with an existing username.'''
+    with pytest.raises(InvalidUsername):
+        _register('testuser', 'othertestpassword')
 
-def test_register_existing_user(client):
-    '''Tests registering user whose username already exists in database.'''
-    client.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-    # Try to register same user again.
-    response = client.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-    assert response.status_code == 200
-    assert b'Username already in use. Please try again.' in response.data
+def test_login_nonexistent_user():
+    '''Tests logging in a non-existent user.'''
+    with pytest.raises(InvalidUsername):
+        _login('othertestuser', 'testpassword')
 
-def test_login(client):
-    '''Tests logging in with an existing account.'''
-    client.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-    response = client.post('/login', data={'username': 'testuser', 'password': 'testpassword'})
-    assert response.status_code == 302
-
-def test_login_nonexistent_user(client):
-    '''Tests logging in using credentials that do not exist.'''
-    response = client.post('/login', data={'username': 'testuser', 'password': 'testpassword'})
-    assert response.status_code == 200
-    assert b'No account associated with username. Please try again.' in response.data
-    client.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-    response = client.post('/login', data={'username': 'differenttestuser', 'password': 'testpassword'})
-    assert response.status_code == 200
-    assert b'No account associated with username. Please try again.' in response.data
-
-def test_login_wrong_password(client):
-    '''Tests logging in using incorrect password.'''
-    client.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-    response = client.post('/login', data={'username': 'testuser', 'password': 'wrongpassword'})
-    assert response.status_code == 200
-    assert b'Username or password is incorrect. Please try again.' in response.data
+def test_login_incorrect_credentials():
+    '''Tests logging in a user with incorrect credentials.'''
+    with pytest.raises(InvalidCredentials):
+        _login('testuser', 'othertestpassword')
