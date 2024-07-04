@@ -1,7 +1,7 @@
 # Module containing all database handling functions.
 
 import sqlite3
-from constants import USERS_DB
+from services.constants import USERS_DB
 
 def get_db_connection(db_file: str):
     '''
