@@ -1,4 +1,4 @@
-# This module tests registration and login functionality
+# This module tests registration and login functionality.
 
 import pytest
 import sys
@@ -6,9 +6,9 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import _register, _login
-from database import get_db_connection, initialize_users_db
-from exceptions import InvalidCredentials, InvalidUsername
+from src.app import _register, _login
+from services.database import get_db_connection, initialize_users_db
+from services.exceptions import InvalidCredentials, InvalidUsername
 
 USERS_DB = 'users.db'
 
