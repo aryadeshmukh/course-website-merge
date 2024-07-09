@@ -1,4 +1,4 @@
-# Module containing all database handling functions.
+'''Module containing all database handling functions.'''
 
 import sqlite3
 from services.constants import USERS_DB
