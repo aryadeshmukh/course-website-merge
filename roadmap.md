@@ -19,4 +19,5 @@
 - User can indicate when finished adding courses to proceed.
     - User must have at least one course selected to proceed.
 - User can log out and go back to register page.
+    - All selected courses must be saved for user when user logs back in.
 - This page shown after successful registration.

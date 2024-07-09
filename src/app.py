@@ -1,4 +1,4 @@
-# This module contains the server implmentation of Course Website Merger
+'''This module contains the server implmentation of Course Website Merger.'''
 
 from flask import Flask, render_template, request, redirect, url_for
 from services.exceptions import InvalidCredentials, InvalidUsername
@@ -38,8 +38,8 @@ def login():
     '''
     Logs in user.
 
-    If username is not associated with an account or if password is incorrect, user must try again before
-    proceeding.
+    If username is not associated with an account or if password is incorrect, user must try again
+    before proceeding.
     '''
     error = None
     if request.method == 'POST':
