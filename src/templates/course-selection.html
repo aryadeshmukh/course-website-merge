@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Course Selection</title>
+    </head>
+    <body>
+        <h1>Course Selection</h1><br>
+        <h2>Select a Course:</h2>
+        <form action="/submit" method="post">
+            <select id="courses" name="course">
+                <option value="">Select</option>  <!-- Placeholder option -->
+                {% for course in courses %}
+                    <option value="{{ course }}">{{ course }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+        {% if error %}
+            <p class="error"><strong>Error:</strong> {{ error }}</p>
+        {% endif %}
+    </body>
+</html>

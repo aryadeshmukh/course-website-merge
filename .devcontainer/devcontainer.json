@@ -42,7 +42,9 @@
 				"KevinRose.vsc-python-indent",
 				"njpwerner.autodocstring",
 				"donjayamanne.python-extension-pack",
-				"magicstack.MagicPython"
+				"magicstack.MagicPython",
+				"Zignd.html-css-class-completion",
+				"ecmel.vscode-html-css"
 			]
 		}
 	},
