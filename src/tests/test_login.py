@@ -19,9 +19,6 @@ def test_register_user():
     '''Test registering new user.'''
     try:
         register_user('testuser', 'testpassword')
-        # with get_db_connection(USERS_DB) as con:
-        #     user = con.execute('SELECT username WHERE username = ?', ('testuser',)).fetchone()
-        #     assert user
     except InvalidUsername:
         assert False
 
@@ -29,9 +26,6 @@ def test_login_user():
     '''Test logging in existing user.'''
     try:
         login_user('testuser', 'testpassword')
-        # with get_db_connection(USERS_DB) as con:
-        #     user = con.execute('SELECT username WHERE username = ?', ('testuser',)).fetchone()
-        #     assert user
     except InvalidUsername:
         assert False
     except InvalidCredentials:

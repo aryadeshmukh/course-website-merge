@@ -5,8 +5,9 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from services.exceptions import InvalidCredentials, InvalidUsername
 from services.exceptions import CourseAlreadySelected, NoCourseSelected
 from services.database import initialize_user_info, initialize_courses_db
-from services.functions import register_user, login_user, list_courses
-from services.functions import add_course_to_user, remove_course_from_user, list_user_courses
+from services.database import list_courses, list_user_courses
+from services.functions import register_user, login_user
+from services.functions import add_course_to_user, remove_course_from_user
 from services.constants import ALPHABET
 
 app = Flask(__name__)
