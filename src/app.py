@@ -3,15 +3,17 @@
 import secrets
 from flask import Flask, render_template, request, redirect, url_for, session
 from services.exceptions import InvalidCredentials, InvalidUsername
+from services.exceptions import CourseAlreadySelected, NoCourseSelected
 from services.database import initialize_user_info, initialize_courses_db
 from services.functions import register_user, login_user, list_courses
+from services.functions import add_course_to_user, remove_course_from_user, list_user_courses
 from services.constants import ALPHABET
 
 app = Flask(__name__)
 
 app.secret_key = ''.join(secrets.choice(ALPHABET) for _ in range(16))
 
-initialize_user_info(reset=False)
+initialize_user_info(reset=True)
 initialize_courses_db(update=False)
 
 @app.route('/')
@@ -34,7 +36,7 @@ def register():
             password = request.form['password']
             register_user(username, password)
             session['username'] = username
-            return redirect(url_for('login'))
+            return redirect(url_for('select_courses'))
         except InvalidUsername:
             error = 'Username already in use. Please try again.'
     return render_template('register.html', error=error)
@@ -63,10 +65,40 @@ def login():
 
 @app.route('/select-courses', methods=['GET', 'POST'])
 def select_courses():
+    '''
+    User directed to course selection page after successfull registration.
+    
+    If user selects a course that is already in the user's course list, user must try again.
+    User must select at least one course before proceeding.
+    '''
+    username = session['username']
     error = None
     if request.method == 'POST':
-        pass
-    return render_template('course-selection.html', error=error, courses=list_courses())
+        if request.form.get('form_id') == 'add-course':
+            # User adds a new course
+            try:
+                course_code = request.form['course']
+                if not course_code:
+                    raise NoCourseSelected
+                add_course_to_user(username, course_code)
+            except CourseAlreadySelected:
+                error = 'Course already selected.'
+            except NoCourseSelected:
+                error = None
+        elif request.form.get('form_id') == 'remove-course':
+            # User removes a course
+            course_code = request.form['course']
+            remove_course_from_user(username, course_code)
+        else:
+            # User submits selected courses
+            if len(list_user_courses(username)) < 1:
+                error = 'You must select at least one course to proceed.'
+            else:
+                return redirect(url_for('home'))
+    return render_template('course-selection.html',
+                           error=error,
+                           courses=list_courses(),
+                           user_courses=list_user_courses(username))
 
 if __name__ == '__main__':
     app.run(debug=True)

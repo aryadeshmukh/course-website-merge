@@ -1,9 +1,10 @@
 '''This module contains helper functions used in the app.'''
 
+import json
 from werkzeug.security import generate_password_hash, check_password_hash
 from services.constants import USERS_DB, COURSES_DB, USER_COURSES_DB
 from services.database import get_db_connection
-from services.exceptions import InvalidCredentials, InvalidUsername
+from services.exceptions import InvalidCredentials, InvalidUsername, CourseAlreadySelected
 
 def register_user(username: str, password: str) -> None:
     '''
@@ -61,23 +62,55 @@ def list_courses() -> list:
             courses.append(row['course_code'])
     return courses
 
-def add_course_to_user(username: str, course: str) -> None:
+def add_course_to_user(username: str, course_code: str) -> None:
     """Adds a new course to user's course list.
+    
+    If course is already in user's course list, a CourseAlreadySelected exception is raised.
 
     Args:
         username (str): user to whom course should be added
-        course (str): course to be added to user
+        course_code (str): code of course to be added to user
     """
-    raise NotImplementedError
+    with get_db_connection(USER_COURSES_DB) as con:
+        user_courses_json = (
+            con
+            .execute('SELECT course_list_data FROM user_courses WHERE username = ?', (username,))
+            .fetchone()
+        )
+        if not user_courses_json:
+            user_course_list = [course_code]
+            new_user_courses_json = json.dumps(user_course_list)
+            con.execute('INSERT INTO user_courses (username, course_list_data) VALUES (?, ?)',
+                        (username, new_user_courses_json))
+            con.commit()
+        else:
+            user_course_list = json.loads(user_courses_json[0])
+            if course_code not in user_course_list:
+                user_course_list.append(course_code)
+                con.execute('UPDATE user_courses SET course_list_data = ? WHERE username = ?',
+                            (json.dumps(user_course_list), username))
+                con.commit()
+            else:
+                raise CourseAlreadySelected
 
-def remove_course_from_user(username: str, course: str) -> None:
+def remove_course_from_user(username: str, course_code: str) -> None:
     """Removes a course from user's course list.
 
     Args:
         username (str): user from whom course should be deleted
-        course (str): course to be deleted from user
+        course_code (str): code of course to be deleted from user
     """
-    raise NotImplementedError
+    with get_db_connection(USER_COURSES_DB) as con:
+        user_courses_json = (
+            con
+            .execute('SELECT course_list_data FROM user_courses WHERE username = ?', (username,))
+            .fetchone()
+        )
+        user_course_list = json.loads(user_courses_json[0])
+        user_course_list.remove(course_code)
+        con.execute('UPDATE user_courses SET course_list_data = ? WHERE username = ?',
+                    (json.dumps(user_course_list), username))
+        con.commit()
 
 def list_user_courses(username: str) -> list:
     """Returns the user's selected course list.
@@ -88,4 +121,14 @@ def list_user_courses(username: str) -> list:
     Returns:
         list: list containing all courses in user's course list
     """
-    raise NotImplementedError
+    with get_db_connection(USER_COURSES_DB) as con:
+        user_courses_json = (
+            con
+            .execute('SELECT course_list_data FROM user_courses WHERE username = ?', (username,))
+            .fetchone()
+        )
+        if not user_courses_json:
+            return []
+        else:
+            user_course_list = json.loads(user_courses_json[0])
+            return user_course_list

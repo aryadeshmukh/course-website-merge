@@ -1,8 +1,8 @@
-# This module tests registration and login functionality.
+'''This module tests registration and login functionality.'''
 
-import pytest
 import sys
 import os
+import pytest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -10,12 +10,10 @@ from services.functions import register_user, login_user
 from services.database import initialize_users_db
 from services.exceptions import InvalidCredentials, InvalidUsername
 
-USERS_DB = 'users.db'
-
 @pytest.fixture(scope='module', autouse=True)
 def clean_db():
     '''Enables use of a clean database.'''
-    initialize_users_db(erase=True)
+    initialize_users_db(reset=True)
 
 def test_register_user():
     '''Test registering new user.'''

@@ -12,7 +12,7 @@ COURSES_DB = 'databases/courses.db'
 COURSES_SQL = 'databases/courses.sql'
 
 # Database file containing users' selected courses
-USER_COURSES_DB = 'database/user-courses.db'
+USER_COURSES_DB = 'databases/user-courses.db'
 
 # string containing alphabet
 ALPHABET = string.ascii_letters + string.digits + string.punctuation
