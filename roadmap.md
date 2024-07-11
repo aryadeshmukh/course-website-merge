@@ -21,3 +21,12 @@
 - User can log out and go back to register page.
     - All selected courses must be saved for user when user logs back in.
 - This page shown after successful registration.
+### Step 3: Assignment Scraping (Basic)
+- User should see all assignments for EECS16B Course
+    - Labs
+    - Homeworks
+    - Exams
+- Displayed in a table format
+    - First column should show assignment name
+    - Second column should have associated due date
+    - Third column should have any links associated with assignment
