@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Course Selection</title>
+    </head>
+    <body>
+        <h1>Course Selection</h1><br>
+        <h2>Select a Course:</h2>
+        <form method="POST">
+            <input type="hidden" name="form_id" value="add-course">
+            <select id="course-dropdown" name="course">
+                <option value="">Select</option>  <!-- Placeholder option -->
+                {% for course_code in courses %}
+                    <option value="{{ course_code }}">{{ course_code }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+        <form method="POST">
+            <input type="hidden" name="form_id" value="continue">
+            <br><button type="submit">Continue</button>
+        </form>
+        {% if error %}
+            <p class="error"><strong>Error:</strong> {{ error }}</p>
+        {% endif %}
+        {% if user_courses %}
+            <h2>Your Courses:</h2>
+            {% for course_code in user_courses %}
+                <form method="POST">
+                    <input type="hidden" name="form_id" value="remove-course">
+                    <input type="hidden" name="course" value="{{ course_code }}">
+                    <p>{{ course_code }}</p>
+                    <button type="submit">Remove</button><br>
+                </form>
+            {% endfor %}
+        {% endif %}
+    </body>
+</html>
