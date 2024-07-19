@@ -30,3 +30,5 @@
     - First column should show assignment name
     - Second column should have associated due date
     - Third column should have any links associated with assignment
+- Assignments should be listed in order of due date
+    - Earliest due date first
