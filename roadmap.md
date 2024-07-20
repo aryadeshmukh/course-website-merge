@@ -32,3 +32,16 @@
     - Third column should have any links associated with assignment
 - Assignments should be listed in order of due date
     - Earliest due date first
+### Step 4: Assignment Scraping
+- User should see all assignments for courses selected during course selection
+    - Labs
+    - Homeworks
+    - Exams
+- Displayed in a table format
+    - First column should show course of assignment
+    - Second column should show type of assignment
+    - Third column should show assignment name
+    - Fourth column should show assignment due date
+    - Fifth column should show any links associated with assignment
+- Assignments should be listed in order of due date
+    - Earliest due date first
