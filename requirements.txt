@@ -1,3 +1,5 @@
 Flask
 werkzeug
 pytest
+beautifulsoup4
+requests

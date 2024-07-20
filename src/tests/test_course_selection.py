@@ -27,13 +27,13 @@ def test_add_course_different_user():
     add_course_to_user('user2', 'EECS16B')
     assert list_user_courses('user1') == ['EECS16B', 'COMPSCI61B']
     assert list_user_courses('user2') == ['DATAC8', 'EECS16B']
-    
+
 def test_add_existing_course():
     '''Tests adding a course that a user already has selected.'''
     with pytest.raises(CourseAlreadySelected):
         add_course_to_user('user1', 'COMPSCI61B')
     assert list_user_courses('user1') == ['EECS16B', 'COMPSCI61B']
-    
+
 def test_remove_course_from_user():
     '''Tests removing a course from a user.'''
     remove_course_from_user('user1', 'EECS16B')

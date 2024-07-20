@@ -9,6 +9,7 @@ from services.database import list_courses, list_user_courses
 from services.functions import register_user, login_user
 from services.functions import add_course_to_user, remove_course_from_user
 from services.constants import ALPHABET
+from services.scraping import all_assignments_data
 
 app = Flask(__name__)
 
@@ -100,6 +101,20 @@ def select_courses():
                            error=error,
                            courses=list_courses(),
                            user_courses=list_user_courses(username))
+
+@app.route('/assignments')
+def assignments():
+    '''
+    User is directed to assignments page after successful login or course selection.
+    
+    User sees assignments of all selected courses and assignment information.
+    Assignments are shown in sorted order. The assignment with the nearest due date
+    is shown first.
+    '''
+    user_courses = ['EECS16B']
+    assignments_info = all_assignments_data(user_courses)
+    return render_template('assignments-calendar.html',
+                           assignments_info=assignments_info)
 
 if __name__ == '__main__':
     app.run(debug=True)
