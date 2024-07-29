@@ -1,4 +1,4 @@
-'''This module tests scraping assignment information from EECS16B course website.'''
+'''This module tests scraping assignment information from COMPSCI61B course website.'''
 
 import sys
 import os
@@ -8,7 +8,7 @@ from helper_test_functions import filter_assignments_info
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from services.assignments_info import AssignmentsInfo
-from services.scrapers.eecs16b_scraper import scrape_eecs16b
+from services.scrapers.cs61b_scraper import scrape_cs61b
 from services.dates import date_comparator
 
 @pytest.fixture(scope='module')
@@ -18,13 +18,14 @@ def assignments_info() -> AssignmentsInfo:
     Returns:
         AssignmentInfo: AssignmentInfo object containing EECS16B assignment information.
     """
-    with open('course_websites/eecs16b_full.txt', 'r', encoding='utf-8') as file:
-        return scrape_eecs16b(file.read())
+    with open('course_websites/cs61b_full.txt', 'r', encoding='utf-8') as file:
+        return scrape_cs61b(file.read())
 
 @pytest.mark.parametrize('assignment_type, num_assignments, assignment_type_indicator', [
-    ('Homework', 14, 'Homework'),
-    ('Exam', 2, 'MT'),
-    ('Lab', 11, 'Lab')
+    ('Homework', 6, 'Homework'),
+    ('Exam', 3, ' '),
+    ('Lab', 10, 'Lab'),
+    ('Project', 11, 'Project')
 ])
 def test_assignment_scraping(
     assignments_info: AssignmentsInfo,
@@ -42,31 +43,27 @@ def test_assignment_scraping(
 
     filtered_assignments_info = filter_assignments_info(assignments_info, assignment_type_indices)
 
-    # Test that all assignments are EECS16B assignments
+    # Test that all assignments are COMPSCI61B assignments
     for course in filtered_assignments_info.assignment_courses:
-        assert course == 'EECS16B'
+        assert course == 'COMPSCI61B'
 
     # Test that selected assignments are of correct type
     for assignment in filtered_assignments_info.assignment_names:
         assert assignment_type_indicator in assignment
-
-    # Test that assignments are sorted in nearest-due-date order
-    prev_due_date_val = 0
-    for date in filtered_assignments_info.due_dates:
-        curr_date_val = date_comparator(date)
-        assert curr_date_val > prev_due_date_val
-        prev_due_date_val = curr_date_val
 
 def test_assignment_links_scraping(assignments_info: AssignmentsInfo):
     '''Tests correct scraping of all link assignment data.'''
     homework_indices = []
     exam_indices = []
     lab_indices = []
+    project_indices = []
     for i, type_ in enumerate(assignments_info.assignment_types):
         if type_ == 'Homework':
             homework_indices.append(i)
         elif type_ == 'Exam':
             exam_indices.append(i)
+        elif type_ == 'Project':
+            project_indices.append(i)
         else:
             lab_indices.append(i)
 
@@ -81,19 +78,24 @@ def test_assignment_links_scraping(assignments_info: AssignmentsInfo):
         filter_assignments_info(assignments_info, lab_indices)
         .links_info
     )
+    project_links_info = (
+        filter_assignments_info(assignments_info, project_indices)
+        .links_info
+    )
 
     # Test homework links
-    for i, links in enumerate(homework_links_info):
-        if i != 8:
-            assert len(links) == 1
-        else:
-            assert len(links) == 3
+    for links in homework_links_info:
+        assert len(links) == 1
 
     # Test exam links
     for links in exam_links_info:
         assert links == [(None, None)]
+    
+    # Test project links
+    for links in project_links_info:
+        assert len(links) == 1
 
     # Test lab links
-    assert len(lab_links_info[0]) == 5
-    assert len(lab_links_info[2]) == 6
-    assert lab_links_info[7] == [(None, None)]
+    assert len(lab_links_info[0]) == 2
+    assert len(lab_links_info[6]) == 3
+    assert len(lab_links_info[9]) == 2

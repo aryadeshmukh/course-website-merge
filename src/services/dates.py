@@ -39,6 +39,26 @@ def convert_date_to_code(month: str, day: str) -> str:
     except Exception:
         return None
 
+def format_date_code(date_code: str) -> str:
+    """Adds zeros to month and day of date code to pad date code to five digits.
+
+    Args:
+        date_code (str): incomplete date code
+
+    Returns:
+        str: correct five digit date code corresponding to input date_code
+    """
+    if '/' not in date_code:
+        return f'00/00'
+    date_parts = date_code.split('/')
+    month = date_parts[0]
+    day = date_parts[1]
+    if len(month) == 1:
+        month = f'0{month}'
+    if len(day) == 1:
+        day =f'0{day}'
+    return f'{month}/{day}'
+
 def date_comparator(date_code: str) -> int:
     """Returns unique number associated with date_code in the form of mm/dd.
     

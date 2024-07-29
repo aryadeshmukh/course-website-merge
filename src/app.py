@@ -9,7 +9,7 @@ from services.database import list_courses, list_user_courses
 from services.functions import register_user, login_user
 from services.functions import add_course_to_user, remove_course_from_user
 from services.constants import ALPHABET
-from services.scraping import all_assignments_data
+from services.assignment_data import all_assignments_data
 
 app = Flask(__name__)
 
@@ -17,10 +17,6 @@ app.secret_key = ''.join(secrets.choice(ALPHABET) for _ in range(16))
 
 initialize_user_info(reset=True)
 initialize_courses_db(update=False)
-
-@app.route('/')
-def home():
-    return 'Success!'
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -58,7 +54,7 @@ def login():
         try:
             login_user(username, password)
             session['username'] = username
-            return redirect(url_for('home'))
+            return redirect(url_for('assignments'))
         except InvalidUsername:
             error = 'No account associated with username. Please try again.'
         except InvalidCredentials:
@@ -96,7 +92,7 @@ def select_courses():
             if len(list_user_courses(username)) < 1:
                 error = 'You must select at least one course to proceed.'
             else:
-                return redirect(url_for('home'))
+                return redirect(url_for('assignments'))
     return render_template('course-selection.html',
                            error=error,
                            courses=list_courses(),
@@ -111,8 +107,8 @@ def assignments():
     Assignments are shown in sorted order. The assignment with the nearest due date
     is shown first.
     '''
-    user_courses = ['EECS16B']
-    assignments_info = all_assignments_data(user_courses)
+    username = session['username']
+    assignments_info = all_assignments_data(list_user_courses(username))
     return render_template('assignments-calendar.html',
                            assignments_info=assignments_info)
 
