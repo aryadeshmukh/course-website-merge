@@ -61,7 +61,9 @@ def add_new_user(username: str, hashed_password: str) -> None:
         con.commit()
 
 def get_hashed_password(username: str) -> str:
-    """Returns hashed password of user associated with username. Returns None if user does not exists.
+    """Returns hashed password of user associated with username.
+    
+    Returns None if user does not exists.
 
     Args:
         username (str): _description_
@@ -182,7 +184,7 @@ def add_new_user_course_list(username: str, course_list_data: str) -> None:
         con.execute('INSERT INTO user_courses (username, course_list_data) VALUES (?, ?)',
                     (username, course_list_data))
         con.commit()
-        
+
 def update_user_course_list(username: str, course_list_data: str) -> None:
     """Updates user's course list.
 
@@ -205,4 +207,26 @@ def initialize_user_info(reset: bool = False) -> None:
     """
     initialize_users_db(reset=reset)
     initialize_user_courses_db(reset=reset)
+
+def get_course_link(course_code: str) -> str:
+    """Returns url of course page of course.
+    
+    Returns None if there is no entry in courses database corresponding to course_code.
+
+    Args:
+        course_code (str): course_code of course
+
+    Returns:
+        str: url of webpage of course
+    """
+    try:
+        with get_db_connection(COURSES_DB) as con:
+            course_url = (
+                con
+                .execute('SELECT course_link FROM courses WHERE course_code = ?',
+                         (course_code,))
+                .fetchone())
+            return course_url[0]
+    except Exception:
+        return None
     

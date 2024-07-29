@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Assignnments Calendar</title>
+        <style>
+            table {
+                width: 50%;
+                border-collapse: collapse; /* Ensures borders don't have gaps */
+            }
+            th, td {
+                border: 1px solid black; /* Adds border to table cells */
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Your Assignments</h1>
+        <a href="{{ url_for('select_courses') }}">Edit Course Selection</a>
+        <table>
+            <tr>
+                <th>Course</th>
+                <th>Assignment Type</th>
+                <th>Assignment</th>
+                <th>Due Date</th>
+                <th>Links</th>
+            </tr>
+            {% for course, assignment_type, assignment, due_date, links_info in assignments_info %}
+                <tr>
+                    <th>{{ course }}</th>
+                    <th>{{ assignment_type }}</th>
+                    <th>{{ assignment }}</th>
+                    <th>{{ due_date }}</th>
+                    {% if links_info.0.0 == None %}
+                        <th></th>
+                    {% else %}
+                        <th>
+                            <ul>
+                                {% for link, link_label in links_info %}
+                                    <li><a href={{link}}>{{ link_label }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </th>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
