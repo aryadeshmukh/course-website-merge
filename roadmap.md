@@ -45,3 +45,7 @@
     - Fifth column should show any links associated with assignment
 - Assignments should be listed in order of due date
     - Earliest due date first
+### Step 5: Assignments In Scope
+- User should see only assignments in scope at the current date
+    - Assignments in scope are assignments assigned on or before current date
+    - Scrape date assigned for assignments
