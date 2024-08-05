@@ -47,5 +47,17 @@
     - Earliest due date first
 ### Step 5: Assignments In Scope
 - User should see only assignments in scope at the current date
-    - Assignments in scope are assignments assigned on or before current date
-    - Scrape date assigned for assignments
+    - Assignments in scope if assigned on or before current date
+    - Exams in scope if within one week of current date
+### Step 6: Marking Assignment Completion
+- Assignments endpoint should have two tabs
+    - First tab contains pending assignments
+        - Assignments in scope that have yet to be completed
+        - Current view of assignments endpoint
+    - Second tab contains completed assignments
+        - Assignments that have been marked as complete by the user
+        - Same view as assignments except in this new tab
+- User can mark unfinished assignments as complete
+    - Assignment information is moved to completed assignments tab
+- User can mark completed assignments as pending
+    - Assignment information is moved to pending assignments tab
