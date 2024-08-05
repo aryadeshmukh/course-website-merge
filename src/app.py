@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 app.secret_key = ''.join(secrets.choice(ALPHABET) for _ in range(16))
 
-initialize_user_info(reset=True)
+initialize_user_info(reset=False)
 initialize_courses_db(update=False)
 
 @app.route('/register', methods=['GET', 'POST'])

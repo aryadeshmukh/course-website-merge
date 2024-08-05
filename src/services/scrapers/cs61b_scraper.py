@@ -1,16 +1,18 @@
 '''This module contains scraper function for cs61b course website.'''
 
 import re
+from datetime import date, timedelta
 from bs4 import BeautifulSoup
 from services.database import get_course_link
 from services.dates import convert_date_to_code, format_date_code
 from services.assignments_info import AssignmentsInfo
 
-def scrape_cs61b(website_text: str) -> AssignmentsInfo:
+def scrape_cs61b(website_text: str, curr_date: date) -> AssignmentsInfo:
     """Returns scraped assignment information from cs61b website.
 
     Args:
         website_text (str): html text for cs61b course website
+        curr_date (date): upper bound assign date for assignments to be scraped
 
     Returns:
         AssignmentsInfo: named tuple containing scraped assignment information
@@ -26,9 +28,19 @@ def scrape_cs61b(website_text: str) -> AssignmentsInfo:
 
     for row in rows:
 
+        # Exit loop if assignments have not been assigned yet
+        date_td = row.find('td', class_=re.compile('border-hack'))
+        if date_td:
+            date_text = date_td.text.split()
+            assigned_date = convert_date_to_code(date_text[0][-3:], date_text[1])
+            if assigned_date - timedelta(weeks=1) > curr_date:
+                break
+        else:
+            continue
+
         # Scraping homework information
         homework_td = row.find('td', class_='homework')
-        if homework_td:
+        if homework_td and assigned_date <= curr_date:
             homework_a_tag = homework_td.find('a')
             if homework_a_tag:
                 assignments_info.assignment_courses.append(course_code)
@@ -42,7 +54,7 @@ def scrape_cs61b(website_text: str) -> AssignmentsInfo:
 
         # Scraping project information
         project_td = row.find('td', class_='project')
-        if project_td:
+        if project_td and assigned_date <= curr_date:
             project_a_tags = project_td.find_all('a')
             for project_a_tag in project_a_tags:
                 assignments_info.assignment_courses.append(course_code)
@@ -64,15 +76,15 @@ def scrape_cs61b(website_text: str) -> AssignmentsInfo:
 
         # Scraping lab information
         lab_td = row.find(lambda tag: tag.name == 'td' and 'Lab' in tag.text)
-        if lab_td:
+        if lab_td and assigned_date <= curr_date:
             first_a_tag = lab_td.find('a')
             if first_a_tag:
                 assignments_info.assignment_courses.append(course_code)
                 assignments_info.assignment_types.append('Lab')
                 assignments_info.assignment_names.append(first_a_tag.text)
-                date = re.search(r'\(due (\d+/\d+)\)', lab_td.text)
-                if date:
-                    assignments_info.due_dates.append(format_date_code(date.group(1)))
+                due_date = re.search(r'\(due (\d+/\d+)\)', lab_td.text)
+                if due_date:
+                    assignments_info.due_dates.append(format_date_code(due_date.group(1)))
                 else:
                     assignments_info.due_dates.append('')
                 lab_links_info = []
@@ -83,7 +95,7 @@ def scrape_cs61b(website_text: str) -> AssignmentsInfo:
 
         # Scraping exam information
         exam_strong = row.find('strong')
-        if exam_strong:
+        if exam_strong and 'Midterm' in exam_strong.text:
             assignments_info.assignment_courses.append(course_code)
             assignments_info.assignment_types.append('Exam')
             assignments_info.assignment_names.append(exam_strong.text)
