@@ -62,7 +62,8 @@ def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
                     date_text = homework_text.split()[-1][:-1]
                 else:
                     date_text = homework_text.split()[-1][1:-1]
-                assignments_info.due_dates.append(format_date_code(date_text))
+                assignments_info.due_dates.append(
+                    format_date_code(date_text).isoformat())
                 assignments_info.links_info.append([(
                     homework_link_tag['href'],
                     homework_link_tag.text)])
@@ -80,7 +81,8 @@ def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
                     date_text = lab_text.split()[-3][:-4]
                 else:
                     date_text = lab_text.split()[-3][1:-4]
-                assignments_info.due_dates.append(format_date_code(date_text))
+                date_code = format_date_code(date_text)
+                assignments_info.due_dates.append(date_code and date_code.isoformat())
                 assignments_info.links_info.append([(lab_link_tag['href'], lab_link_tag.text)])
 
         # Scraping project information
@@ -100,8 +102,9 @@ def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
                 else:
                     date_text = project_text.split()[-3][1:-1]
                 date_text_checkpoint = project_text.split()[-1][:-1]
-                assignments_info.due_dates.append(format_date_code(date_text))
-                assignments_info.due_dates.append(format_date_code(date_text_checkpoint))
+                assignments_info.due_dates.append(format_date_code(date_text).isoformat())
+                assignments_info.due_dates.append(
+                    format_date_code(date_text_checkpoint).isoformat())
                 assignments_info.links_info.append([(
                     project_link_tag['href'],
                     project_link_tag.text)])
@@ -115,7 +118,7 @@ def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
             assignments_info.assignment_courses.append(course_code)
             assignments_info.assignment_types.append('Exam')
             assignments_info.assignment_names.append(' '.join(exam_strong.parent.text.split()[1:]))
-            assignments_info.due_dates.append(hw_assign_date)
+            assignments_info.due_dates.append(hw_assign_date.isoformat())
             assignments_info.links_info.append([(None, None)])
 
     return assignments_info

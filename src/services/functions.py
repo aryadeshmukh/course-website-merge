@@ -6,7 +6,10 @@ from services.constants import USERS_DB, COURSES_DB, USER_COURSES_DB
 from services.database import user_exists, add_new_user, get_hashed_password
 from services.database import list_user_courses, user_courses_db_contains_user
 from services.database import add_new_user_course_list, update_user_course_list
+from services.database import add_new_user_to_user_assignments, add_pending_assignments
+from services.database import get_pending_assignments, update_pending_assignments
 from services.exceptions import InvalidCredentials, InvalidUsername, CourseAlreadySelected
+from services.assignment_data import course_assignment_data
 
 def register_user(username: str, password: str) -> None:
     '''
@@ -24,6 +27,7 @@ def register_user(username: str, password: str) -> None:
         raise InvalidUsername
     else:
         add_new_user(username, hashed_password)
+        add_new_user_to_user_assignments(username)
 
 def login_user(username: str, password: str) -> None:
     '''
@@ -76,3 +80,36 @@ def remove_course_from_user(username: str, course_code: str) -> None:
     user_course_list.remove(course_code)
     new_user_courses_json = json.dumps(user_course_list)
     update_user_course_list(username, new_user_courses_json)
+
+def add_new_course_assignments(username: str) -> None:
+    """Add assignments of newly added courses to user's pending assignment list.
+
+    Args:
+        username (str): user adding a new course
+    """
+    user_course_list = list_user_courses(username)
+    user_pending_assignments = get_pending_assignments(username)
+    new_user_courses = []
+    for course in user_course_list:
+        if course not in user_pending_assignments:
+            new_user_courses.append(course)
+    for course_code in new_user_courses:
+        assignments = course_assignment_data(course_code)
+        add_pending_assignments(username, course_code, assignments)
+
+def remove_course_assignments(username: str) -> None:
+    """Remove course assignments of removed courses from both pending and completed lists.
+
+    Args:
+        username (str): username of user
+    """
+    user_course_list = list_user_courses(username)
+    user_pending_assignments = get_pending_assignments(username)
+    removed_courses = []
+    for course in user_pending_assignments:
+        if course not in user_course_list:
+            removed_courses.append(course)
+    for course in removed_courses:
+        del user_pending_assignments[course]
+    pending_assignments_data = json.dumps(user_pending_assignments)
+    update_pending_assignments(username, pending_assignments_data)

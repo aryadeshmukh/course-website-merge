@@ -3,10 +3,11 @@
 from datetime import date
 import requests
 from services.database import get_course_link
+from services.database import get_pending_assignments
 from services.scrapers.eecs16b_scraper import scrape_eecs16b
 from services.scrapers.cs61b_scraper import scrape_cs61b
 from services.scrapers.data8_scraper import scrape_data8
-from services.assignments_info import AssignmentsInfo
+# from services.assignments_info import AssignmentsInfo
 
 # map containing course and its scrape function pairs
 SCRAPE_FUNCS = {
@@ -15,31 +16,41 @@ SCRAPE_FUNCS = {
     'DATAC8' : scrape_data8
 }
 
-def all_assignments_data(user_courses: list) -> iter:
-    """Returns a zip of assignment information from all of user's selected courses.
+def course_assignment_data(course_code: str) -> list:
+    """Returns a zipped list of all in scope assignment information from selected course.
+
+    Args:
+        course_code (str): course code of selectec course
+
+    Returns:
+        list: zipped list of all assignment information
+    """
+    course_url = get_course_link(course_code)
+    response = requests.get(course_url)
+    if response.status_code == 200:
+        assignments_info = SCRAPE_FUNCS[course_code](response.text, date.today())
+    return list(zip(
+        assignments_info.assignment_courses,
+        assignments_info.assignment_types,
+        assignments_info.assignment_names,
+        assignments_info.due_dates,
+        assignments_info.links_info
+    ))
+
+def all_pending_assignments(username: str) -> list:
+    """Returns a list of assignment information for all of user's pending assignments.
     
     Assignments are sorted by closest approaching due date.
 
     Args:
-        user_courses (list): list of courses user has selected
+        username (str): username of user
 
     Returns:
-        iter: zip containing assignment information for all classes in user_courses
-        sorted in order of closest approaching due date
+        list: sorted list containing assignment information for all pending assignments
     """
-    all_assignments_info = AssignmentsInfo([], [], [], [], [])
-
-    for course_code in user_courses:
-        course_url = get_course_link(course_code)
-        response = requests.get(course_url)
-        if response.status_code == 200:
-            course_assignments_info = SCRAPE_FUNCS[course_code](response.text, date.today())
-            for i, _ in enumerate(all_assignments_info):
-                all_assignments_info[i].extend(course_assignments_info[i])
-    return sorted(zip(
-        all_assignments_info.assignment_courses,
-        all_assignments_info.assignment_types,
-        all_assignments_info.assignment_names,
-        all_assignments_info.due_dates,
-        all_assignments_info.links_info),
+    pending_assignments = get_pending_assignments(username)
+    pending_assignments_list = []
+    for course in pending_assignments:
+        pending_assignments_list.extend(pending_assignments[course])
+    return sorted(pending_assignments_list,
                   key=lambda assignment: assignment[3])

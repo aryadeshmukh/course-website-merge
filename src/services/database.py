@@ -3,6 +3,7 @@
 import sqlite3
 import json
 from services.constants import USERS_DB, COURSES_DB, COURSES_SQL, USER_COURSES_DB
+from services.constants import USER_ASSIGNMENTS_DB
 
 def get_db_connection(db_file: str):
     '''
@@ -197,6 +198,89 @@ def update_user_course_list(username: str, course_list_data: str) -> None:
                     (course_list_data, username))
         con.commit()
 
+def initialize_user_assignments_db(reset: bool = False) -> None:
+    """Creates a database containing user assignment information for both pending and
+    completed assignments.
+
+    Args:
+        reset (bool, optional): Erases and resets database if ture. Defaults to False.
+    """
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        if reset:
+            con.execute('DROP TABLE IF EXISTS user_assignments')
+        con.execute('''CREATE TABLE IF NOT EXISTS user_assignments
+                        (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            username TEXT UNIQUE,
+                            pending_assignments_data TEXT,
+                            completed_assignments_data TEXT)''')
+        con.commit()
+
+def add_new_user_to_user_assignments(username: str) -> None:
+    """Adds a new record to user_assignments database corresponding to new user.
+
+    Args:
+        username (str): user to be added to user_assignments database
+    """
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        con.execute('''INSERT INTO user_assignments
+                    (username, pending_assignments_data, completed_assignments_data)
+                    VALUES (?, ?, ?)''',
+                    (username,
+                     json.dumps({}),
+                     json.dumps({})))
+        con.commit()
+
+def get_pending_assignments(username: str) -> dict:
+    """Returns a dictionary containing all of the user's pending assignments.
+
+    Args:
+        username (str): username of user
+
+    Returns:
+        dict: dictionary containing all of the user's pending assignments
+    """
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        pending_assignments_json = (
+            con
+            .execute('SELECT pending_assignments_data FROM user_assignments WHERE username = ?',
+                     (username,))
+            .fetchone()
+        )
+        if not pending_assignments_json:
+            return {}
+        else:
+            return json.loads(pending_assignments_json[0])
+
+def add_pending_assignments(username: str, course_code: str, assignments: list) -> None:
+    """Adds the assignments to the list of user's pending assignments.
+
+    Args:
+        username (str): user with new pending assignments
+        course_code (str): course to which new pending assignments belong
+        assignments (list): list of tuples corresponding to new pending assignments
+    """
+    pending_assignments = get_pending_assignments(username)
+    if course_code not in pending_assignments:
+        pending_assignments[course_code] = []
+    pending_assignments[course_code].extend(assignments)
+    pending_assignments_json = json.dumps(pending_assignments)
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        con.execute('''UPDATE user_assignments SET pending_assignments_data = ?
+                    WHERE username = ?''', (pending_assignments_json, username))
+        con.commit()
+
+def update_pending_assignments(username: str, pending_assignments_data: str) -> None:
+    """Replaces existing pending assignment data with new input data.
+
+    Args:
+        username (str): user whos pending assignments are updated
+        pending_assignments_data (str): new pending assignment data
+    """
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        con.execute('''UPDATE user_assignments SET pending_assignments_data = ?
+                    WHERE username = ?''', (pending_assignments_data, username))
+        con.commit()
+
 def initialize_user_info(reset: bool = False) -> None:
     """Creates all user databases if they do not exist already.
     
@@ -207,6 +291,7 @@ def initialize_user_info(reset: bool = False) -> None:
     """
     initialize_users_db(reset=reset)
     initialize_user_courses_db(reset=reset)
+    initialize_user_assignments_db(reset=reset)
 
 def get_course_link(course_code: str) -> str:
     """Returns url of course page of course.

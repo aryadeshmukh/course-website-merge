@@ -47,7 +47,7 @@ def scrape_cs61b(website_text: str, curr_date: date) -> AssignmentsInfo:
                 assignments_info.assignment_types.append('Homework')
                 assignments_info.assignment_names.append(homework_a_tag.text)
                 assignments_info.due_dates.append(
-                    format_date_code(homework_td.text.split()[3][:-1]))
+                    format_date_code(homework_td.text.split()[3][:-1]).isoformat())
                 link = homework_a_tag['href']
                 link_prefix = '' if 'gradescope' in link else course_url
                 assignments_info.links_info.append([(link_prefix + link, homework_a_tag.text)])
@@ -68,7 +68,8 @@ def scrape_cs61b(website_text: str, curr_date: date) -> AssignmentsInfo:
                     labeled_project_name = f'Project {assignments_info.assignment_names[-1]}'
                     assignments_info.assignment_names[-1] = labeled_project_name
                 assignments_info.due_dates.append(
-                    format_date_code(project_td.text.split()[-1][:-1]))
+                    format_date_code(project_td.text.split()[-1][:-1])
+                    .isoformat())
                 link = project_a_tag['href']
                 assignments_info.links_info.append([(
                     course_url + link,
@@ -84,7 +85,8 @@ def scrape_cs61b(website_text: str, curr_date: date) -> AssignmentsInfo:
                 assignments_info.assignment_names.append(first_a_tag.text)
                 due_date = re.search(r'\(due (\d+/\d+)\)', lab_td.text)
                 if due_date:
-                    assignments_info.due_dates.append(format_date_code(due_date.group(1)))
+                    assignments_info.due_dates.append(
+                        format_date_code(due_date.group(1)).isoformat())
                 else:
                     assignments_info.due_dates.append('')
                 lab_links_info = []
@@ -100,7 +102,8 @@ def scrape_cs61b(website_text: str, curr_date: date) -> AssignmentsInfo:
             assignments_info.assignment_types.append('Exam')
             assignments_info.assignment_names.append(exam_strong.text)
             date_text = row.find('td', class_='border-hack').text.split()[-2:]
-            assignments_info.due_dates.append(convert_date_to_code(date_text[0][-3:], date_text[1]))
+            assignments_info.due_dates.append(
+                convert_date_to_code(date_text[0][-3:], date_text[1]).isoformat())
             assignments_info.links_info.append([(None, None)])
 
     return assignments_info

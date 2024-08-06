@@ -8,14 +8,15 @@ from services.database import initialize_user_info, initialize_courses_db
 from services.database import list_courses, list_user_courses
 from services.functions import register_user, login_user
 from services.functions import add_course_to_user, remove_course_from_user
+from services.functions import add_new_course_assignments, remove_course_assignments
 from services.constants import ALPHABET
-from services.assignment_data import all_assignments_data
+from services.assignment_data import all_pending_assignments
 
 app = Flask(__name__)
 
 app.secret_key = ''.join(secrets.choice(ALPHABET) for _ in range(16))
 
-initialize_user_info(reset=False)
+initialize_user_info(reset=True)
 initialize_courses_db(update=False)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -92,6 +93,8 @@ def select_courses():
             if len(list_user_courses(username)) < 1:
                 error = 'You must select at least one course to proceed.'
             else:
+                remove_course_assignments(username)
+                add_new_course_assignments(username)
                 return redirect(url_for('assignments'))
     return render_template('course-selection.html',
                            error=error,
@@ -108,9 +111,8 @@ def assignments():
     is shown first.
     '''
     username = session['username']
-    assignments_info = all_assignments_data(list_user_courses(username))
     return render_template('assignments-calendar.html',
-                           assignments_info=assignments_info)
+                           assignments_info=all_pending_assignments(username))
 
 if __name__ == '__main__':
     app.run(debug=True)

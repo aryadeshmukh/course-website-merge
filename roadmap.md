@@ -61,3 +61,9 @@
     - Assignment information is moved to completed assignments tab
 - User can mark completed assignments as pending
     - Assignment information is moved to pending assignments tab
+- User adds another class
+    - All other class assignments should not be affected
+    - All new class assignments should be added to pending assignments tab
+- User removes a class
+    - All other class assignmnets should not be affected
+    - All assignments pertaining to removed class should be removed from both pending and completed assignments tabs

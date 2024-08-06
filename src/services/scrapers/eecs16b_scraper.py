@@ -59,7 +59,7 @@ def scrape_eecs16b(website_text: str, curr_date: date) -> AssignmentsInfo:
             assignments_info.assignment_names.append(' '.join(assignment_text[1:3])[:-1])
             assignments_info.due_dates.append(convert_date_to_code(
                 assignment_text[3],
-                assignment_text[4]))
+                assignment_text[4]).isoformat())
             assignments_info.links_info.append([(None, None)])
 
         # Scraping homework information
@@ -70,7 +70,8 @@ def scrape_eecs16b(website_text: str, curr_date: date) -> AssignmentsInfo:
             assignments_info.assignment_types.append('Homework')
             assignment_text = homework_td.text.split()
             assignments_info.assignment_names.append(' '.join(assignment_text[:2]))
-            assignments_info.due_dates.append(format_date_code(assignment_text[3]))
+            assignments_info.due_dates.append(
+                format_date_code(assignment_text[3]).isoformat())
             homework_links_info = []
             for link in homework_links:
                 homework_links_info.append((course_url + link['href'], link.text))
@@ -85,7 +86,8 @@ def scrape_eecs16b(website_text: str, curr_date: date) -> AssignmentsInfo:
             assignments_info.assignment_courses.append(course_code)
             assignments_info.assignment_types.append('Lab')
             assignments_info.assignment_names.append(lab_text)
-            assignments_info.due_dates.append(format_date_code(table_data[1].text.split()[0]))
+            assignments_info.due_dates.append(
+                format_date_code(table_data[1].text.split()[0]).isoformat())
             lab_links_info = []
             for link in lab_td.find_all('a'):
                 lab_links_info.append((link['href'], link.text))
