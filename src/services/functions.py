@@ -8,6 +8,7 @@ from services.database import list_user_courses, user_courses_db_contains_user
 from services.database import add_new_user_course_list, update_user_course_list
 from services.database import add_new_user_to_user_assignments, add_pending_assignments
 from services.database import get_pending_assignments, update_pending_assignments
+from services.database import add_completed_assignment
 from services.exceptions import InvalidCredentials, InvalidUsername, CourseAlreadySelected
 from services.assignment_data import course_assignment_data
 
@@ -113,3 +114,30 @@ def remove_course_assignments(username: str) -> None:
         del user_pending_assignments[course]
     pending_assignments_data = json.dumps(user_pending_assignments)
     update_pending_assignments(username, pending_assignments_data)
+
+def mark_assignment_complete(username: str, minimum_assignment_info_str: str) -> None:
+    """Move selected assignment from user's pending assignments list to user's completed assignments
+    list.
+
+    Args:
+        username (str): username of user
+        minimum_assignment_info (str): jsonified list containing course, name, and due_date of
+        assignment to move
+    """
+    try:
+        minimum_assignment_info = minimum_assignment_info_str.split('||')
+        pending_assignments = get_pending_assignments(username)
+        course_code = minimum_assignment_info[0]
+        assignment_name = minimum_assignment_info[1]
+        due_date = minimum_assignment_info[2]
+        assignment_index = 0
+        for i, assignment_info in enumerate(pending_assignments[course_code]):
+            if assignment_info[2] == assignment_name and assignment_info[3] == due_date:
+                assignment_index = i
+                break
+        add_completed_assignment(username, pending_assignments[course_code][assignment_index])
+        del pending_assignments[course_code][assignment_index]
+        pending_assignments_data = json.dumps(pending_assignments)
+        update_pending_assignments(username, pending_assignments_data)
+    except Exception:
+        return

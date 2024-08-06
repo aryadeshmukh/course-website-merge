@@ -9,6 +9,7 @@ from services.database import list_courses, list_user_courses
 from services.functions import register_user, login_user
 from services.functions import add_course_to_user, remove_course_from_user
 from services.functions import add_new_course_assignments, remove_course_assignments
+from services.functions import mark_assignment_complete
 from services.constants import ALPHABET
 from services.assignment_data import all_pending_assignments
 
@@ -16,7 +17,7 @@ app = Flask(__name__)
 
 app.secret_key = ''.join(secrets.choice(ALPHABET) for _ in range(16))
 
-initialize_user_info(reset=True)
+initialize_user_info(reset=False)
 initialize_courses_db(update=False)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -101,7 +102,7 @@ def select_courses():
                            courses=list_courses(),
                            user_courses=list_user_courses(username))
 
-@app.route('/assignments')
+@app.route('/assignments', methods=['GET', 'POST'])
 def assignments():
     '''
     User is directed to assignments page after successful login or course selection.
@@ -111,6 +112,11 @@ def assignments():
     is shown first.
     '''
     username = session['username']
+    if request.method == 'POST':
+        minimum_assignment_info_str = request.form.get('marked-assignment')
+        if minimum_assignment_info_str:
+            print(minimum_assignment_info_str)
+            mark_assignment_complete(username, minimum_assignment_info_str)
     return render_template('assignments-calendar.html',
                            assignments_info=all_pending_assignments(username))
 

@@ -251,6 +251,27 @@ def get_pending_assignments(username: str) -> dict:
         else:
             return json.loads(pending_assignments_json[0])
 
+def get_completed_assignments(username: str) -> dict:
+    """Returns a dictionary containing all of the user's completed assignments.
+
+    Args:
+        username (str): username of user
+
+    Returns:
+        dict: dictionary containing all of the user's completed assignments
+    """
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        completed_assignments_json = (
+            con
+            .execute('SELECT completed_assignments_data FROM user_assignments WHERE username = ?',
+                     (username,))
+            .fetchone()
+        )
+        if not completed_assignments_json:
+            return {}
+        else:
+            return json.loads(completed_assignments_json[0])
+
 def add_pending_assignments(username: str, course_code: str, assignments: list) -> None:
     """Adds the assignments to the list of user's pending assignments.
 
@@ -280,6 +301,19 @@ def update_pending_assignments(username: str, pending_assignments_data: str) -> 
         con.execute('''UPDATE user_assignments SET pending_assignments_data = ?
                     WHERE username = ?''', (pending_assignments_data, username))
         con.commit()
+
+def add_completed_assignment(username: str, completed_assignment: tuple) -> None:
+    """Add an assignment to user's completed assignments.
+
+    Args:
+        username (str): username of user
+        completed_assignment (tuple): information of completed assignment
+    """
+    completed_assignments = get_completed_assignments(username)
+    course_code = completed_assignment[0]
+    if course_code not in completed_assignments:
+        completed_assignments[course_code] = []
+    completed_assignments[course_code].append(completed_assignment)
 
 def initialize_user_info(reset: bool = False) -> None:
     """Creates all user databases if they do not exist already.
