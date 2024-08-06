@@ -1,12 +1,12 @@
 '''Module containing all assignment data handling functions.'''
 
+from datetime import date
 import requests
 from services.database import get_course_link
 from services.scrapers.eecs16b_scraper import scrape_eecs16b
 from services.scrapers.cs61b_scraper import scrape_cs61b
 from services.scrapers.data8_scraper import scrape_data8
 from services.assignments_info import AssignmentsInfo
-from services.dates import date_comparator
 
 # map containing course and its scrape function pairs
 SCRAPE_FUNCS = {
@@ -33,7 +33,7 @@ def all_assignments_data(user_courses: list) -> iter:
         course_url = get_course_link(course_code)
         response = requests.get(course_url)
         if response.status_code == 200:
-            course_assignments_info = SCRAPE_FUNCS[course_code](response.text)
+            course_assignments_info = SCRAPE_FUNCS[course_code](response.text, date.today())
             for i, _ in enumerate(all_assignments_info):
                 all_assignments_info[i].extend(course_assignments_info[i])
     return sorted(zip(
@@ -42,4 +42,4 @@ def all_assignments_data(user_courses: list) -> iter:
         all_assignments_info.assignment_names,
         all_assignments_info.due_dates,
         all_assignments_info.links_info),
-                  key=lambda assignment: date_comparator(assignment[3]))
+                  key=lambda assignment: assignment[3])

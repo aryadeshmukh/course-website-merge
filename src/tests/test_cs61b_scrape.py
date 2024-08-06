@@ -1,5 +1,6 @@
 '''This module tests scraping assignment information from COMPSCI61B course website.'''
 
+from datetime import date
 import sys
 import os
 import pytest
@@ -9,21 +10,33 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from services.assignments_info import AssignmentsInfo
 from services.scrapers.cs61b_scraper import scrape_cs61b
-from services.dates import date_comparator
+from services.constants import YEAR
 
 @pytest.fixture(scope='module')
 def assignments_info() -> AssignmentsInfo:
-    """Returns AssignmentInfo object containing EECS16B assignment information.
+    """Returns AssignmentInfo object containing COMPSCI61B assignment information.
 
     Returns:
-        AssignmentInfo: AssignmentInfo object containing EECS16B assignment information.
+        AssignmentInfo: AssignmentInfo object containing COMPSCI61B assignment information.
     """
+    end_date = date(YEAR, 5, 8)
     with open('course_websites/cs61b_full.txt', 'r', encoding='utf-8') as file:
-        return scrape_cs61b(file.read())
+        return scrape_cs61b(file.read(), end_date)
+
+@pytest.fixture
+def dated_assignments_info() -> AssignmentsInfo:
+    """Returns AssignmentInfo object containing COMPSCI61B assignment information up to a certain date.
+
+    Returns:
+        AssignmentInfo: AssignmentInfo object containing COMPSCI61B assignment information.
+    """
+    mid_date = date(YEAR, 2, 14)
+    with open('course_websites/cs61b_full.txt', 'r', encoding='utf-8') as file:
+        return scrape_cs61b(file.read(), mid_date)
 
 @pytest.mark.parametrize('assignment_type, num_assignments, assignment_type_indicator', [
     ('Homework', 6, 'Homework'),
-    ('Exam', 3, ' '),
+    ('Exam', 2, 'Midterm'),
     ('Lab', 10, 'Lab'),
     ('Project', 11, 'Project')
 ])
@@ -46,6 +59,34 @@ def test_assignment_scraping(
     # Test that all assignments are COMPSCI61B assignments
     for course in filtered_assignments_info.assignment_courses:
         assert course == 'COMPSCI61B'
+
+    # Test that selected assignments are of correct type
+    for assignment in filtered_assignments_info.assignment_names:
+        assert assignment_type_indicator in assignment
+
+@pytest.mark.parametrize('assignment_type, num_assignments, assignment_type_indicator', [
+    ('Homework', 3, 'Homework'),
+    ('Exam', 1, ' '),
+    ('Lab', 4, 'Lab'),
+    ('Project', 4, 'Project')
+])
+def test_dated_assignment_scraping(
+    dated_assignments_info: AssignmentsInfo,
+    assignment_type: str,
+    num_assignments: int,
+    assignment_type_indicator: str):
+    '''Tests correct scraping of all in scope assignment data.'''
+    assignment_type_indices = []
+    for i, type_ in enumerate(dated_assignments_info.assignment_types):
+        if type_ == assignment_type:
+            assignment_type_indices.append(i)
+
+    # Test that all assignments were scraped
+    assert len(assignment_type_indices) == num_assignments
+
+    filtered_assignments_info = filter_assignments_info(
+        dated_assignments_info,
+        assignment_type_indices)
 
     # Test that selected assignments are of correct type
     for assignment in filtered_assignments_info.assignment_names:

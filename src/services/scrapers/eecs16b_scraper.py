@@ -1,16 +1,18 @@
 '''This module contains scraper function for eecs16b course website.'''
 
 import re
+from datetime import date, timedelta
 from bs4 import BeautifulSoup
 from services.assignments_info import AssignmentsInfo
-from services.dates import convert_date_to_code
+from services.dates import convert_date_to_code, format_date_code
 from services.database import get_course_link
 
-def scrape_eecs16b(website_text: str) -> AssignmentsInfo:
+def scrape_eecs16b(website_text: str, curr_date: date) -> AssignmentsInfo:
     """Returns scraped assignment information from eecs16b website.
 
     Args:
         website_text (str): html text for eecs16b course website
+        curr_date (date): upper bound assign date for assignments to be scraped
 
     Returns:
         AssignmentsInfo: named tuple containing scraped assignment information
@@ -42,6 +44,12 @@ def scrape_eecs16b(website_text: str) -> AssignmentsInfo:
 
         table_data = week.find('tr').find_all('td')
 
+        # Exit loop if assignments have not been assigned yet
+        date_td = table_data[1]
+        assigned_date = format_date_code(date_td.text.split()[0])
+        if assigned_date - timedelta(weeks=1) > curr_date:
+            break
+
         # Scraping exam information
         exam_td = table_data[0]
         if exam_td.text and 'MT' in exam_td.text:
@@ -57,12 +65,12 @@ def scrape_eecs16b(website_text: str) -> AssignmentsInfo:
         # Scraping homework information
         homework_td = table_data[-1]
         homework_links = homework_td.find_all('a')
-        if homework_links:
+        if homework_links and assigned_date <= curr_date:
             assignments_info.assignment_courses.append(course_code)
             assignments_info.assignment_types.append('Homework')
             assignment_text = homework_td.text.split()
             assignments_info.assignment_names.append(' '.join(assignment_text[:2]))
-            assignments_info.due_dates.append(assignment_text[3])
+            assignments_info.due_dates.append(format_date_code(assignment_text[3]))
             homework_links_info = []
             for link in homework_links:
                 homework_links_info.append((course_url + link['href'], link.text))
@@ -73,11 +81,11 @@ def scrape_eecs16b(website_text: str) -> AssignmentsInfo:
         # Scraping lab information
         lab_td = table_data[-2]
         lab_text = get_first_text(lab_td.contents)
-        if lab_text[:3] == 'Lab':
+        if lab_text[:3] == 'Lab' and assigned_date <= curr_date:
             assignments_info.assignment_courses.append(course_code)
             assignments_info.assignment_types.append('Lab')
             assignments_info.assignment_names.append(lab_text)
-            assignments_info.due_dates.append(table_data[1].text.split()[0])
+            assignments_info.due_dates.append(format_date_code(table_data[1].text.split()[0]))
             lab_links_info = []
             for link in lab_td.find_all('a'):
                 lab_links_info.append((link['href'], link.text))

@@ -7,5 +7,5 @@ AssignmentsInfo = collections.namedtuple('AssignmentsInfo', [
     'assignment_types',
     'assignment_names',
     'due_dates',
-    'links_info'
+    'links_info',
 ])
