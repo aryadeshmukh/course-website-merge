@@ -1,5 +1,6 @@
 '''This module contains the server implmentation of Course Website Merger.'''
 
+from datetime import date
 import secrets
 from flask import Flask, render_template, request, redirect, url_for, session
 from services.exceptions import InvalidCredentials, InvalidUsername
@@ -11,13 +12,13 @@ from services.functions import add_course_to_user, remove_course_from_user
 from services.functions import add_new_course_assignments, remove_course_assignments
 from services.functions import mark_assignment_complete
 from services.constants import ALPHABET
-from services.assignment_data import all_pending_assignments
+from services.assignment_data import all_pending_assignments, all_completed_assignments
 
 app = Flask(__name__)
 
 app.secret_key = ''.join(secrets.choice(ALPHABET) for _ in range(16))
 
-initialize_user_info(reset=False)
+initialize_user_info(reset=True)
 initialize_courses_db(update=False)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -95,7 +96,8 @@ def select_courses():
                 error = 'You must select at least one course to proceed.'
             else:
                 remove_course_assignments(username)
-                add_new_course_assignments(username)
+                add_new_course_assignments(username, date.today())
+                session['assignments-view'] = 'pending'
                 return redirect(url_for('assignments'))
     return render_template('course-selection.html',
                            error=error,
@@ -113,12 +115,18 @@ def assignments():
     '''
     username = session['username']
     if request.method == 'POST':
+        assignments_view = request.form.get('assignments-view')
+        if assignments_view:
+            session['assignments-view'] = assignments_view
         minimum_assignment_info_str = request.form.get('marked-assignment')
         if minimum_assignment_info_str:
-            print(minimum_assignment_info_str)
             mark_assignment_complete(username, minimum_assignment_info_str)
+    if session['assignments-view'] == 'completed':
+        assignments_info = all_completed_assignments(username)
+    else:
+        assignments_info = all_pending_assignments(username)
     return render_template('assignments-calendar.html',
-                           assignments_info=all_pending_assignments(username))
+                           assignments_info=assignments_info)
 
 if __name__ == '__main__':
     app.run(debug=True)

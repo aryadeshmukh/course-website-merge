@@ -22,8 +22,10 @@
         <a href="{{ url_for('select_courses') }}">Edit Course Selection</a>
         <!-- Tabs to switch between pending and completed assignments -->
         <div class="tab">
-            <button type="submit" name="assignments-type" value="pending">Pending Assignments</button>
-            <button type="submit" name="assignments-type" value="completed">Completed Assignments</button>
+            <form method="POST">
+                <button type="submit" name="assignments-view" value="pending">Pending Assignments</button>
+                <button type="submit" name="assignments-view" value="completed">Completed Assignments</button>
+            </form>
         </div>
         <!-- Table containing assignment information -->
         <table>

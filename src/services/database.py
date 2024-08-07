@@ -294,12 +294,24 @@ def update_pending_assignments(username: str, pending_assignments_data: str) -> 
     """Replaces existing pending assignment data with new input data.
 
     Args:
-        username (str): user whos pending assignments are updated
+        username (str): user whose pending assignments are to be updated
         pending_assignments_data (str): new pending assignment data
     """
     with get_db_connection(USER_ASSIGNMENTS_DB) as con:
         con.execute('''UPDATE user_assignments SET pending_assignments_data = ?
                     WHERE username = ?''', (pending_assignments_data, username))
+        con.commit()
+
+def update_completed_assignments(username: str, completed_assignments_data: str) -> None:
+    """Replaces existing completed assignment data with new input data.
+
+    Args:
+        username (str): user whos completed assignments are to be updated
+        completed_assignments_data (str): new completed assignment data
+    """
+    with get_db_connection(USER_ASSIGNMENTS_DB) as con:
+        con.execute('''UPDATE user_assignments SET completed_assignments_data = ?
+                    WHERE username = ?''', (completed_assignments_data, username))
         con.commit()
 
 def add_completed_assignment(username: str, completed_assignment: tuple) -> None:
@@ -314,6 +326,8 @@ def add_completed_assignment(username: str, completed_assignment: tuple) -> None
     if course_code not in completed_assignments:
         completed_assignments[course_code] = []
     completed_assignments[course_code].append(completed_assignment)
+    completed_assignments_data = json.dumps(completed_assignments)
+    update_completed_assignments(username, completed_assignments_data)
 
 def initialize_user_info(reset: bool = False) -> None:
     """Creates all user databases if they do not exist already.

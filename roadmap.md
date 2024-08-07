@@ -56,7 +56,7 @@
         - Current view of assignments endpoint
     - Second tab contains completed assignments
         - Assignments that have been marked as complete by the user
-        - Same view as assignments except in this new tab
+        - Same view as pending assignments tab except in reverse sorted order
 - User can mark unfinished assignments as complete
     - Assignment information is moved to completed assignments tab
 - User can mark completed assignments as pending
