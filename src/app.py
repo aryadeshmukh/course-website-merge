@@ -10,7 +10,7 @@ from services.database import list_courses, list_user_courses
 from services.functions import register_user, login_user
 from services.functions import add_course_to_user, remove_course_from_user
 from services.functions import add_new_course_assignments, remove_course_assignments
-from services.functions import mark_assignment_complete
+from services.functions import mark_assignment_complete, mark_assignment_incomplete
 from services.constants import ALPHABET
 from services.assignment_data import all_pending_assignments, all_completed_assignments
 
@@ -118,15 +118,21 @@ def assignments():
         assignments_view = request.form.get('assignments-view')
         if assignments_view:
             session['assignments-view'] = assignments_view
+        assignments_view = session['assignments-view']
         minimum_assignment_info_str = request.form.get('marked-assignment')
         if minimum_assignment_info_str:
-            mark_assignment_complete(username, minimum_assignment_info_str)
-    if session['assignments-view'] == 'completed':
+            if assignments_view == 'pending':
+                mark_assignment_complete(username, minimum_assignment_info_str)
+            else:
+                mark_assignment_incomplete(username, minimum_assignment_info_str)
+    assignments_view = session['assignments-view']
+    if assignments_view == 'completed':
         assignments_info = all_completed_assignments(username)
     else:
         assignments_info = all_pending_assignments(username)
     return render_template('assignments-calendar.html',
-                           assignments_info=assignments_info)
+                           assignments_info=assignments_info,
+                           assignments_view=assignments_view)
 
 if __name__ == '__main__':
     app.run(debug=True)

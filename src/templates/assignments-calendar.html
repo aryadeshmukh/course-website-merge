@@ -56,7 +56,13 @@
                     <th>
                         <form method='POST'>
                             <input type="hidden" name="marked-assignment" value="{{ course }}||{{ assignment }}||{{ due_date }}">
-                            <button type="submit">Completed</button>
+                            <button type="submit">
+                                {% if assignments_view == 'pending' %}
+                                    Complete
+                                {% else %}
+                                    Incomplete
+                                {% endif %}
+                            </button>
                         </form>
                     </th>
                 </tr>

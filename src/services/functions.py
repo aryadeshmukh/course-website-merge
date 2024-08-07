@@ -169,7 +169,7 @@ def mark_assignment_incomplete(username: str, minimum_assignment_info_str: str) 
         if assignment_info[2] == assignment_name and assignment_info[3] == due_date:
             assignment_index = i
             break
-    add_pending_assignments(username, completed_assignments[course_code][assignment_index])
+    add_pending_assignments(username, course_code, [completed_assignments[course_code][assignment_index]])
     del completed_assignments[course_code][assignment_index]
     completed_assignments_data = json.dumps(completed_assignments)
     update_completed_assignments(username, completed_assignments_data)

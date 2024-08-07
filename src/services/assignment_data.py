@@ -7,7 +7,7 @@ from services.database import get_pending_assignments, get_completed_assignments
 from services.scrapers.eecs16b_scraper import scrape_eecs16b
 from services.scrapers.cs61b_scraper import scrape_cs61b
 from services.scrapers.data8_scraper import scrape_data8
-# from services.assignments_info import AssignmentsInfo
+from services.constants import SCRAPE_TIMEOUT
 
 # map containing course and its scrape function pairs
 SCRAPE_FUNCS = {
@@ -26,17 +26,20 @@ def course_assignment_data(course_code: str, curr_date: date) -> list:
     Returns:
         list: zipped list of all assignment information
     """
-    course_url = get_course_link(course_code)
-    response = requests.get(course_url)
-    if response.status_code == 200:
-        assignments_info = SCRAPE_FUNCS[course_code](response.text, curr_date)
-    return list(zip(
-        assignments_info.assignment_courses,
-        assignments_info.assignment_types,
-        assignments_info.assignment_names,
-        assignments_info.due_dates,
-        assignments_info.links_info
-    ))
+    try:
+        course_url = get_course_link(course_code)
+        response = requests.get(course_url, timeout=SCRAPE_TIMEOUT)
+        if response.status_code == 200:
+            assignments_info = SCRAPE_FUNCS[course_code](response.text, curr_date)
+        return list(zip(
+            assignments_info.assignment_courses,
+            assignments_info.assignment_types,
+            assignments_info.assignment_names,
+            assignments_info.due_dates,
+            assignments_info.links_info
+        ))
+    except TimeoutError:
+        return list(zip([], [], [], [], []))
 
 def all_pending_assignments(username: str) -> list:
     """Returns a list of assignment information for all of user's pending assignments.

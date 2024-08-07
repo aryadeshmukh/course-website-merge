@@ -39,3 +39,6 @@ MONTH_CODES = {
     'nov' : '11',
     'dec' : '12'
 }
+
+# Number of seconds to scrape before timeout has been reached
+SCRAPE_TIMEOUT = 10
