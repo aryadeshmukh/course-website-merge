@@ -16,21 +16,33 @@ SCRAPE_FUNCS = {
     'DATAC8' : scrape_data8
 }
 
-def course_assignment_data(course_code: str, curr_date: date) -> list:
+# map containing course and its test file pairs
+TEST_FILES = {
+    'EECS16B' : 'course_websites/eecs16b_full.txt',
+    'COMPSCI61B' : 'course_websites/cs61b_full.txt',
+    'DATAC8' : 'course_websites/data8_full.txt'
+}
+
+def course_assignment_data(course_code: str, curr_date: date, test: bool=False) -> list:
     """Returns a zipped list of all in scope assignment information from selected course.
 
     Args:
         course_code (str): course code of selectec course
         curr_date (date): date for assignments in scope
+        test (bool): indicates whether this function is being used for testing purposes
 
     Returns:
         list: zipped list of all assignment information
     """
     try:
-        course_url = get_course_link(course_code)
-        response = requests.get(course_url, timeout=SCRAPE_TIMEOUT)
-        if response.status_code == 200:
-            assignments_info = SCRAPE_FUNCS[course_code](response.text, curr_date)
+        if test:
+            with open(TEST_FILES[course_code], 'r', encoding='utf-8') as file:
+                assignments_info = SCRAPE_FUNCS[course_code](file.read(), curr_date)
+        else:
+            course_url = get_course_link(course_code)
+            response = requests.get(course_url, timeout=SCRAPE_TIMEOUT)
+            if response.status_code == 200:
+                assignments_info = SCRAPE_FUNCS[course_code](response.text, curr_date)
         return list(zip(
             assignments_info.assignment_courses,
             assignments_info.assignment_types,

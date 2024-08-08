@@ -82,7 +82,8 @@ def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
                 else:
                     date_text = lab_text.split()[-3][1:-4]
                 date_code = format_date_code(date_text)
-                assignments_info.due_dates.append(date_code and date_code.isoformat())
+                due_date_string = (date_code and date_code.isoformat()) or ''
+                assignments_info.due_dates.append(due_date_string)
                 assignments_info.links_info.append([(lab_link_tag['href'], lab_link_tag.text)])
 
         # Scraping project information

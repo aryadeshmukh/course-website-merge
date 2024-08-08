@@ -7,13 +7,13 @@ import pytest
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from services.functions import register_user, login_user
-from services.database import initialize_users_db
+from services.database import initialize_user_info
 from services.exceptions import InvalidCredentials, InvalidUsername
 
 @pytest.fixture(scope='module', autouse=True)
 def clean_db():
     '''Enables use of a clean database.'''
-    initialize_users_db(reset=True)
+    initialize_user_info(reset=True)
 
 def test_register_user():
     '''Test registering new user.'''

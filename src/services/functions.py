@@ -83,12 +83,13 @@ def remove_course_from_user(username: str, course_code: str) -> None:
     new_user_courses_json = json.dumps(user_course_list)
     update_user_course_list(username, new_user_courses_json)
 
-def add_new_course_assignments(username: str, curr_date: date) -> None:
+def add_new_course_assignments(username: str, curr_date: date, test: bool=False) -> None:
     """Add assignments of newly added courses to user's pending assignment list.
 
     Args:
         username (str): user adding a new course
         curr_date (date): date for assignments in scope
+        test (bool): indicator whether function is being used in a test
     """
     user_course_list = list_user_courses(username)
     user_pending_assignments = get_pending_assignments(username)
@@ -97,7 +98,7 @@ def add_new_course_assignments(username: str, curr_date: date) -> None:
         if course not in user_pending_assignments:
             new_user_courses.append(course)
     for course_code in new_user_courses:
-        assignments = course_assignment_data(course_code, curr_date)
+        assignments = course_assignment_data(course_code, curr_date, test)
         add_pending_assignments(username, course_code, assignments)
 
 def remove_course_assignments(username: str) -> None:
@@ -169,7 +170,9 @@ def mark_assignment_incomplete(username: str, minimum_assignment_info_str: str) 
         if assignment_info[2] == assignment_name and assignment_info[3] == due_date:
             assignment_index = i
             break
-    add_pending_assignments(username, course_code, [completed_assignments[course_code][assignment_index]])
+    add_pending_assignments(username,
+                            course_code,
+                            [completed_assignments[course_code][assignment_index]])
     del completed_assignments[course_code][assignment_index]
     completed_assignments_data = json.dumps(completed_assignments)
     update_completed_assignments(username, completed_assignments_data)
