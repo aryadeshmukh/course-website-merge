@@ -72,6 +72,8 @@ def select_courses():
     If user selects a course that is already in the user's course list, user must try again.
     User must select at least one course before proceeding.
     '''
+    if 'username' not in session:
+        return redirect(url_for('login'))
     username = session['username']
     error = None
     if request.method == 'POST':
@@ -99,10 +101,12 @@ def select_courses():
                 add_new_course_assignments(username, date.today())
                 session['assignments-view'] = 'pending'
                 return redirect(url_for('assignments'))
-    return render_template('course-selection.html',
-                           error=error,
-                           courses=list_courses(),
-                           user_courses=list_user_courses(username))
+    context = {
+        'error' : error,
+        'courses' : list_courses(),
+        'user_courses' : list_user_courses(username)
+    }
+    return render_template('course-selection.html', context=context)
 
 @app.route('/assignments', methods=['GET', 'POST'])
 def assignments():
@@ -113,6 +117,8 @@ def assignments():
     Assignments are shown in sorted order. The assignment with the nearest due date
     is shown first.
     '''
+    if 'username' not in session:
+        return redirect(url_for('login'))
     username = session['username']
     if request.method == 'POST':
         assignments_view = request.form.get('assignments-view')
@@ -130,9 +136,11 @@ def assignments():
         assignments_info = all_completed_assignments(username)
     else:
         assignments_info = all_pending_assignments(username)
-    return render_template('assignments-calendar.html',
-                           assignments_info=assignments_info,
-                           assignments_view=assignments_view)
+    context = {
+        'assignments_info' : assignments_info,
+        'assignments_view' : assignments_view
+    }
+    return render_template('assignments-calendar.html', context=context)
 
 if __name__ == '__main__':
     app.run(debug=True)

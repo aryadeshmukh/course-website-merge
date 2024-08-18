@@ -1,5 +1,5 @@
-Flask
-werkzeug
-pytest
-beautifulsoup4
-requests
+Flask==3.0.3
+werkzeug==3.0.3
+pytest==8.2.2
+beautifulsoup4==4.12.3
+requests==2.32.3

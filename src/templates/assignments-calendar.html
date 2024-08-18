@@ -36,7 +36,7 @@
                 <th>Due Date</th>
                 <th>Links</th>
             </tr>
-            {% for course, assignment_type, assignment, due_date, links_info in assignments_info %}
+            {% for course, assignment_type, assignment, due_date, links_info in context['assignments_info'] %}
                 <tr>
                     <th>{{ course }}</th>
                     <th>{{ assignment_type }}</th>
@@ -57,7 +57,7 @@
                         <form method='POST'>
                             <input type="hidden" name="marked-assignment" value="{{ course }}||{{ assignment }}||{{ due_date }}">
                             <button type="submit">
-                                {% if assignments_view == 'pending' %}
+                                {% if context['assignments_view'] == 'pending' %}
                                     Complete
                                 {% else %}
                                     Incomplete

@@ -10,7 +10,7 @@
             <input type="hidden" name="form_id" value="add-course">
             <select id="course-dropdown" name="course">
                 <option value="">Select</option>  <!-- Placeholder option -->
-                {% for course_code in courses %}
+                {% for course_code in context['courses'] %}
                     <option value="{{ course_code }}">{{ course_code }}</option>
                 {% endfor %}
             </select>
@@ -20,12 +20,12 @@
             <input type="hidden" name="form_id" value="continue">
             <br><button type="submit">Continue</button>
         </form>
-        {% if error %}
-            <p class="error"><strong>Error:</strong> {{ error }}</p>
+        {% if context['error'] %}
+            <p class="error"><strong>Error:</strong> {{ context['error'] }}</p>
         {% endif %}
-        {% if user_courses %}
+        {% if context['user_courses'] %}
             <h2>Your Courses:</h2>
-            {% for course_code in user_courses %}
+            {% for course_code in context['user_courses'] %}
                 <form method="POST">
                     <input type="hidden" name="form_id" value="remove-course">
                     <input type="hidden" name="course" value="{{ course_code }}">
