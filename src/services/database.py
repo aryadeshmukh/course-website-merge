@@ -3,7 +3,7 @@
 import sqlite3
 import json
 from services.constants import USERS_DB, COURSES_DB, COURSES_SQL, USER_COURSES_DB
-from services.constants import USER_ASSIGNMENTS_DB
+from services.constants import USER_ASSIGNMENTS_DB, UPDATES_DB
 
 def get_db_connection(db_file: str):
     '''
@@ -329,6 +329,64 @@ def add_completed_assignment(username: str, completed_assignment: tuple) -> None
     completed_assignments_data = json.dumps(completed_assignments)
     update_completed_assignments(username, completed_assignments_data)
 
+def initialize_updates_db(reset: bool = False) -> None:
+    """Creates a database containing each user's most recent update date.
+
+    Args:
+        reset (bool, optional): Erases and resets database if ture. Defaults to False.
+    """
+    with get_db_connection(UPDATES_DB) as con:
+        if reset:
+            con.execute('DROP TABLE IF EXISTS updates')
+        con.execute('''CREATE TABLE IF NOT EXISTS updates
+                        (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            username TEXT UNIQUE,
+                            previous_update_date TEXT)''')
+        con.commit()
+
+def update_previous_update_date(username: str, new_date_str: str) -> None:
+    """Updates previous update date of user to new update date if user record exists in
+    updates database. Otherwise adds user record to updates database.
+
+    Args:
+        username (str): username of user
+        new_date_str (str): date to update previous_update_date
+    """
+    with get_db_connection(UPDATES_DB) as con:
+        new_user = (
+            con
+            .execute('SELECT username FROM updates WHERE username = ?', (username,))
+            .fetchone() is None
+        )
+        if new_user:
+            con.execute('''INSERT INTO updates
+                        (username, previous_update_date)
+                        VALUES (?, ?)''',
+                        (username, new_date_str))
+        else:
+            con.execute('''UPDATE updates SET previous_update_date = ?
+                        WHERE username = ?''', (new_date_str, username))
+        con.commit()
+
+def get_previous_update_date_str(username: str) -> str:
+    """Returns the string representation of the previous date the user's assignments
+    list was updated.
+
+    Args:
+        username (str): username of user
+
+    Returns:
+        str: string representation of previous date the user's assignments list was updated
+    """
+    with get_db_connection(UPDATES_DB) as con:
+        prev_update_date_str = (
+            con
+            .execute('SELECT previous_update_date FROM updates WHERE username = ?',
+                     (username,))
+            .fetchone()
+        )
+        return prev_update_date_str
+
 def initialize_user_info(reset: bool = False) -> None:
     """Creates all user databases if they do not exist already.
     
@@ -340,6 +398,7 @@ def initialize_user_info(reset: bool = False) -> None:
     initialize_users_db(reset=reset)
     initialize_user_courses_db(reset=reset)
     initialize_user_assignments_db(reset=reset)
+    initialize_updates_db(reset=reset)
 
 def get_course_link(course_code: str) -> str:
     """Returns url of course page of course.
