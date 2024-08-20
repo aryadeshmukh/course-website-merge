@@ -385,7 +385,7 @@ def get_previous_update_date_str(username: str) -> str:
                      (username,))
             .fetchone()
         )
-        return prev_update_date_str
+        return prev_update_date_str and prev_update_date_str[0]
 
 def initialize_user_info(reset: bool = False) -> None:
     """Creates all user databases if they do not exist already.
