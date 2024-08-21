@@ -10,6 +10,7 @@ from services.database import add_new_user_to_user_assignments, add_pending_assi
 from services.database import get_pending_assignments, update_pending_assignments
 from services.database import add_completed_assignment, update_completed_assignments
 from services.database import get_completed_assignments
+from services.database import update_previous_update_date, get_previous_update_date_str
 from services.exceptions import InvalidCredentials, InvalidUsername, CourseAlreadySelected
 from services.assignment_data import course_assignment_data
 
@@ -92,13 +93,13 @@ def add_new_course_assignments(username: str, curr_date: date, test: bool=False)
         test (bool): indicator whether function is being used in a test
     """
     user_course_list = list_user_courses(username)
-    user_pending_assignments = get_pending_assignments(username)
+    user_pending_assignments = update_course_assignments(username, curr_date, test)
     new_user_courses = []
     for course in user_course_list:
         if course not in user_pending_assignments:
             new_user_courses.append(course)
     for course_code in new_user_courses:
-        assignments = course_assignment_data(course_code, curr_date, test)
+        assignments = course_assignment_data(course_code, curr_date, None, test)
         add_pending_assignments(username, course_code, assignments)
 
 def remove_course_assignments(username: str) -> None:
@@ -176,3 +177,24 @@ def mark_assignment_incomplete(username: str, minimum_assignment_info_str: str) 
     del completed_assignments[course_code][assignment_index]
     completed_assignments_data = json.dumps(completed_assignments)
     update_completed_assignments(username, completed_assignments_data)
+
+def update_course_assignments(username: str, curr_date: date, test: bool) -> dict:
+    """Adds assignments from user's courses assigned after the most recent scrape to user's
+    pending assignment list.
+
+    Args:
+        username (str): username of user
+        curr_date (date): date for assignments in scope
+        test (bool): indicator whether function is being used in a test
+    
+    Returns:
+        dict: dictionary containing pending assignment data
+    """
+    current_course_list = get_pending_assignments(username)
+    prev_scrape_date_str = get_previous_update_date_str(username)
+    prev_scrape_date = prev_scrape_date_str and date.fromisoformat(prev_scrape_date_str)
+    for course_code in current_course_list:
+        assignments = course_assignment_data(course_code, curr_date, prev_scrape_date, test)
+        add_pending_assignments(username, course_code, assignments)
+    update_previous_update_date(username, curr_date.isoformat())
+    return current_course_list

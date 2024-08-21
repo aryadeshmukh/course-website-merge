@@ -23,12 +23,17 @@ TEST_FILES = {
     'DATAC8' : 'course_websites/data8_full.txt'
 }
 
-def course_assignment_data(course_code: str, curr_date: date, test: bool=False) -> list:
+def course_assignment_data(
+    course_code: str,
+    curr_date: date,
+    prev_scrape_date: date,
+    test: bool=False) -> list:
     """Returns a zipped list of all in scope assignment information from selected course.
 
     Args:
         course_code (str): course code of selectec course
         curr_date (date): date for assignments in scope
+        prev_scrape_date (date): date of previous assignment scraping
         test (bool): indicates whether this function is being used for testing purposes
 
     Returns:
@@ -37,12 +42,18 @@ def course_assignment_data(course_code: str, curr_date: date, test: bool=False) 
     try:
         if test:
             with open(TEST_FILES[course_code], 'r', encoding='utf-8') as file:
-                assignments_info = SCRAPE_FUNCS[course_code](file.read(), curr_date)
+                assignments_info = SCRAPE_FUNCS[course_code](
+                    file.read(),
+                    curr_date,
+                    prev_scrape_date)
         else:
             course_url = get_course_link(course_code)
             response = requests.get(course_url, timeout=SCRAPE_TIMEOUT)
             if response.status_code == 200:
-                assignments_info = SCRAPE_FUNCS[course_code](response.text, curr_date)
+                assignments_info = SCRAPE_FUNCS[course_code](
+                    response.text,
+                    curr_date,
+                    prev_scrape_date)
         return list(zip(
             assignments_info.assignment_courses,
             assignments_info.assignment_types,
