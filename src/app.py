@@ -7,10 +7,12 @@ from services.exceptions import InvalidCredentials, InvalidUsername
 from services.exceptions import CourseAlreadySelected, NoCourseSelected
 from services.database import initialize_user_info, initialize_courses_db
 from services.database import list_courses, list_user_courses
+from services.database import get_previous_update_date_str
 from services.functions import register_user, login_user
 from services.functions import add_course_to_user, remove_course_from_user
 from services.functions import add_new_course_assignments, remove_course_assignments
 from services.functions import mark_assignment_complete, mark_assignment_incomplete
+from services.functions import update_course_assignments
 from services.constants import ALPHABET
 from services.assignment_data import all_pending_assignments, all_completed_assignments
 
@@ -126,7 +128,9 @@ def assignments():
             session['assignments-view'] = assignments_view
         assignments_view = session['assignments-view']
         minimum_assignment_info_str = request.form.get('marked-assignment')
-        if minimum_assignment_info_str:
+        if 'refresh' in request.form:
+            update_course_assignments(username, date.today())
+        elif minimum_assignment_info_str:
             if assignments_view == 'pending':
                 mark_assignment_complete(username, minimum_assignment_info_str)
             else:
@@ -138,7 +142,8 @@ def assignments():
         assignments_info = all_pending_assignments(username)
     context = {
         'assignments_info' : assignments_info,
-        'assignments_view' : assignments_view
+        'assignments_view' : assignments_view,
+        'prev_scrape_date' : get_previous_update_date_str(username)
     }
     return render_template('assignments-calendar.html', context=context)
 

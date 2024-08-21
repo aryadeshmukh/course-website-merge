@@ -51,14 +51,22 @@ def test_scraping_after_all_assignments_complete():
     assert len(pending_assignments) == 2
     assert len(completed_assignments) == 3
 
+def test_marking_assignment_incomplete():
+    '''This function tests marking a completed assignment as incomplete.'''
+    mark_assignment_incomplete(USER_1, EECS_LAB_1)
+    pending_assignments = all_pending_assignments(USER_1)
+    completed_assignments = all_completed_assignments(USER_1)
+    assert len(pending_assignments) == 3
+    assert len(completed_assignments) == 2
+
 def test_adding_new_course():
     '''This function tests adding a new course when an existing course has been scraped.'''
     add_course_to_user(USER_1, 'COMPSCI61B')
     add_new_course_assignments(USER_1, DATE_2, True)
     pending_assignments = all_pending_assignments(USER_1)
     completed_assignments = all_completed_assignments(USER_1)
-    assert len(pending_assignments) == 10
-    assert len(completed_assignments) == 3
+    assert len(pending_assignments) == 11
+    assert len(completed_assignments) == 2
 
 def test_remove_and_add_back_course():
     '''This function tests removing an existing course and then adding it back.'''
@@ -76,7 +84,8 @@ def test_remove_and_add_back_course():
     assert len(completed_assignments) == 0
 
 def test_new_user():
-    '''This function tests that scraping data for a differnet user has no effect on existing users.'''
+    '''This function tests that scraping data for a differnet user has no effect on
+    existing users.'''
     register_user(USER_2, 'password')
     add_course_to_user(USER_2, 'DATAC8')
     add_new_course_assignments(USER_2, DATE_3, True)

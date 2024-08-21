@@ -178,7 +178,7 @@ def mark_assignment_incomplete(username: str, minimum_assignment_info_str: str) 
     completed_assignments_data = json.dumps(completed_assignments)
     update_completed_assignments(username, completed_assignments_data)
 
-def update_course_assignments(username: str, curr_date: date, test: bool) -> dict:
+def update_course_assignments(username: str, curr_date: date, test: bool = False) -> dict:
     """Adds assignments from user's courses assigned after the most recent scrape to user's
     pending assignment list.
 

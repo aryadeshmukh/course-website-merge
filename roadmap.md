@@ -67,3 +67,11 @@
 - User removes a class
     - All other class assignmnets should not be affected
     - All assignments pertaining to removed class should be removed from both pending and completed assignments tabs
+### Step 7: Update Pending Assignments List
+- User can see most recent scraping date
+- User can click a button to search for new pending assignments
+    - Assignments assigned after the most recent scraping date that are now in scope should show up in pending assignments
+    - Completed assignments should remain unchanged
+- Changing course list should update pending assignments for all selected courses
+- If a course is removed and not immediately added back but is added back later, all assignments assigned from the start of the course to the current date should show up in pending assignments,
+regardless of assignment status when course was in user's course list

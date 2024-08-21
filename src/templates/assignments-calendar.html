@@ -22,7 +22,7 @@
         <a href="{{ url_for('select_courses') }}">Edit Course Selection</a><br><br>
         <form method="POST">
             <button type="submit" name="refresh">Update Assignments List</button>
-            <p>Most Recently Updated on: </p>
+            <p>Most Recently Updated on: {{ context['prev_scrape_date'] }}</p>
         </form>
         <!-- Tabs to switch between pending and completed assignments -->
         <div class="tab">
