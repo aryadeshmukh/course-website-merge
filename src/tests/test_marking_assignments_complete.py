@@ -64,6 +64,7 @@ def test_mark_assignments_complete():
 def test_add_and_remove_courses():
     '''This function tests each user's assignments lists after changing courses.'''
     remove_course_from_user(USER_1, 'COMPSCI61B')
+    print([(assignment[0], assignment[2]) for assignment in all_pending_assignments(USER_2)])
     add_course_to_user(USER_2, 'DATAC8')
     remove_course_assignments(USER_1)
     add_new_course_assignments(USER_2, TEST_DATE, True)

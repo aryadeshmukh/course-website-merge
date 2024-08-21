@@ -15,8 +15,11 @@ COURSES_SQL = 'databases/courses.sql'
 # Database file containing users' selected courses
 USER_COURSES_DB = 'databases/user-courses.db'
 
-# Database file containing users' assignment informatin
+# Database file containing users' assignment information
 USER_ASSIGNMENTS_DB = 'databases/user-assignments.db'
+
+# Database file containing user's previous updates
+UPDATES_DB = 'databases/updates.db'
 
 # String containing alphabet
 ALPHABET = string.ascii_letters + string.digits + string.punctuation

@@ -10,6 +10,7 @@ def scrape_homework_info(
     week,
     curr_date: date,
     hw_assign_date: date,
+    prev_scrape_date: date,
     assignments_info: AssignmentsInfo,
     course_code: str) -> None:
     """Scrapes homework information from the input row and updates assignments_info to contain
@@ -19,11 +20,14 @@ def scrape_homework_info(
         week (Tag): tag containing information about to be extracted
         curr_date (date): current date
         hw_assign_date (date): date the homework would have been assigned
+        prev_scrape_date (date): date of previous assignment scrape
         assignments_info (AssignmentsInfo): AssignmentsInfo tuple to be updated with new assignment
         course_code (str): course code
     """
     homework_strong = week.find('strong', class_='label label-homework')
-    if homework_strong and hw_assign_date <= curr_date:
+    if (homework_strong and
+        hw_assign_date <= curr_date and
+        (not prev_scrape_date or prev_scrape_date < hw_assign_date)):
         homework_link_tag = homework_strong.parent.find('a')
         if homework_link_tag:
             assignments_info.assignment_courses.append(course_code)
@@ -44,6 +48,7 @@ def scrape_lab_info(
     week,
     curr_date: date,
     lab_assign_date: date,
+    prev_scrape_date: date,
     assignments_info: AssignmentsInfo,
     course_code: str) -> None:
     """Scrapes lab information from the input row and updates assignments_info to contain
@@ -53,11 +58,14 @@ def scrape_lab_info(
         week (Tag): tag containing information about to be extracted
         curr_date (date): current date
         lab_assign_date (date): date the lab would have been assigned
+        prev_scrape_date (date): date of previous assignment scrape
         assignments_info (AssignmentsInfo): AssignmentsInfo tuple to be updated with new assignment
         course_code (str): course code
     """
     lab_strong = week.find('strong', class_='label label-lab')
-    if lab_strong and lab_assign_date <= curr_date:
+    if (lab_strong and
+        lab_assign_date <= curr_date and
+        (not prev_scrape_date or prev_scrape_date < lab_assign_date)):
         lab_link_tag = lab_strong.parent.find('a')
         if lab_link_tag:
             assignments_info.assignment_courses.append(course_code)
@@ -77,6 +85,7 @@ def scrape_project_info(
     week,
     curr_date: date,
     project_assign_date: date,
+    prev_scrape_date: date,
     assignments_info: AssignmentsInfo,
     course_code: str) -> None:
     """Scrapes project information from the input row and updates assignments_info to contain
@@ -86,11 +95,14 @@ def scrape_project_info(
         week (Tag): tag containing information about to be extracted
         curr_date (date): current date
         project_assign_date (date): date the project would have been assigned
+        prev_scrape_date (date): date of previous assignment scrape
         assignments_info (AssignmentsInfo): AssignmentsInfo tuple to be updated with new assignment
         course_code (str): course code
     """
     project_strong = week.find('strong', class_='label label-project')
-    if project_strong and project_assign_date <= curr_date:
+    if (project_strong and
+        project_assign_date <= curr_date and
+        (not prev_scrape_date or prev_scrape_date < project_assign_date)):
         project_link_tag = project_strong.parent.find('a')
         if project_link_tag:
             assignments_info.assignment_courses.append(course_code)
@@ -118,6 +130,7 @@ def scrape_project_info(
 def scrape_exam_info(
     week,
     exam_assign_date: date,
+    prev_scrape_date: date,
     assignments_info: AssignmentsInfo,
     course_code: str) -> None:
     """Scrapes exam information from the input row and updates assignments_info to contain
@@ -126,23 +139,27 @@ def scrape_exam_info(
     Args:
         week (Tag): tag containing information about to be extracted
         exam_assign_date (date): date the exam would have been assigned
+        prev_scrape_date (date): date of previous assignment scrape
         assignments_info (AssignmentsInfo): AssignmentsInfo tuple to be updated with new assignment
         course_code (str): course code
     """
     exam_strong = week.find('strong', class_='label label-exam')
     if exam_strong and 'Midterm' in exam_strong.parent.text:
-        assignments_info.assignment_courses.append(course_code)
-        assignments_info.assignment_types.append('Exam')
-        assignments_info.assignment_names.append(' '.join(exam_strong.parent.text.split()[1:]))
-        assignments_info.due_dates.append(exam_assign_date.isoformat())
-        assignments_info.links_info.append([(None, None)])
+        if not prev_scrape_date or prev_scrape_date + timedelta(weeks=1) < exam_assign_date:
+            assignments_info.assignment_courses.append(course_code)
+            assignments_info.assignment_types.append('Exam')
+            assignments_info.assignment_names.append(' '.join(exam_strong.parent.text.split()[1:]))
+            assignments_info.due_dates.append(exam_assign_date.isoformat())
+            assignments_info.links_info.append([(None, None)])
 
-def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
+def scrape_data8(website_text: str, curr_date: date, prev_scrape_date: date) -> AssignmentsInfo:
     """Returns scraped assignment information from data8 website.
 
     Args:
         website_text (str): html text for data8 course website
         curr_date (date): upper bound assign date for assignments to be scraped
+        prev_scrape_date (date): lower bound assign date for assignments to be scraped
+        None if first time scraping
 
     Returns:
         AssignmentsInfo: named tuple containing scraped assignment information
@@ -175,14 +192,19 @@ def scrape_data8(website_text: str, curr_date: date) -> AssignmentsInfo:
                 hw_assign_date = converted_dates[-1]
                 if lab_assign_date - timedelta(weeks=1) > curr_date:
                     break
+                if prev_scrape_date and lab_assign_date + timedelta(weeks=1) <= prev_scrape_date:
+                    continue
             else:
                 continue
         else:
             continue
 
-        scrape_homework_info(week, curr_date, hw_assign_date, assignments_info, course_code)
-        scrape_lab_info(week, curr_date, lab_assign_date, assignments_info, course_code)
-        scrape_project_info(week, curr_date, hw_assign_date, assignments_info, course_code)
-        scrape_exam_info(week, hw_assign_date, assignments_info, course_code)
+        scrape_homework_info(
+            week, curr_date, hw_assign_date, prev_scrape_date, assignments_info, course_code)
+        scrape_lab_info(
+            week, curr_date, lab_assign_date, prev_scrape_date, assignments_info, course_code)
+        scrape_project_info(
+            week, curr_date, hw_assign_date, prev_scrape_date, assignments_info, course_code)
+        scrape_exam_info(week, hw_assign_date, prev_scrape_date, assignments_info, course_code)
 
     return assignments_info
